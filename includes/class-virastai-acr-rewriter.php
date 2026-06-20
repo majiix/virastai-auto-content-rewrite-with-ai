@@ -211,7 +211,7 @@ class Virastai_Acr_Rewriter {
 
 			// Title Only Path.
 			if ( $process_title && ! empty( $title_prompt_inst ) ) {
-				$full_prompt = $base_context . "\n\n---\n\n" . $title_prompt_inst . "\n\nIMPORTANT: Output ONLY the catchy title text. Do NOT wrap the title in quotes, introductory text, explanations, or thinking blocks. Output nothing else.";
+				$full_prompt = $base_context . "\n\n---\n\n" . $title_prompt_inst . "\n\nIMPORTANT: Output ONLY the title text. Do NOT wrap the title in quotes, introductory text, explanations, or thinking blocks. Output nothing else.";
 				$new_title   = $this->virastai_acr_call_api( $full_prompt, false );
 
 				if ( $new_title ) {

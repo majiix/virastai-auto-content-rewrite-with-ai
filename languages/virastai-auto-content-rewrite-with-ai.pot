@@ -1,0 +1,794 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Project-Id-Version: Virastai Auto Content Rewrite With AI\n"
+"POT-Creation-Date: 2026-06-20 19:11+0330\n"
+"PO-Revision-Date: 2026-06-20 18:35+0330\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: virastai-auto-content-rewrite-with-ai.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: includes/class-virastai-acr-admin-sidebar.php:168
+msgid "Statistics"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:170
+msgid "Selected Types:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:174
+msgid "Total Posts:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:179
+msgid "Processed Titles:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:182
+msgid "Reset Title Progress"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:191
+msgid "Processed Content:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:194
+msgid "Reset Content Progress"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:203
+msgid "Processed Excerpts:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:206
+msgid "Reset Excerpt Progress"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:215
+msgid "Sandbox Drafts (Pending Review)"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:218
+msgid "Sandbox Titles:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:221
+msgid "Delete Sandbox Titles"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:230
+msgid "Sandbox Content:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:233
+msgid "Delete Sandbox Content"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:242
+msgid "Sandbox Excerpts:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:245
+msgid "Delete Sandbox Excerpts"
+msgstr ""
+
+#: includes/class-virastai-acr-admin-sidebar.php:256
+msgid "Complete"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:57
+msgid ""
+"The OpenRouter API Key is empty. The plugin will not work without it. Do you "
+"want to continue?"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:58
+msgid "This will reset ALL progress (Content & Titles). Are you sure?"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:59
+msgid "Reset Title progress only?"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:60
+msgid "Reset Content progress only?"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:61
+msgid ""
+"Are you sure you want to delete ALL Sandbox Titles? This action cannot be "
+"undone."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:62
+msgid ""
+"Are you sure you want to delete ALL Sandbox Content? This action cannot be "
+"undone."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:76
+#: includes/class-virastai-acr-metabox.php:267
+#: includes/class-virastai-acr-metabox.php:336
+#: includes/class-virastai-acr-metabox.php:363
+msgid "Permission denied."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:91
+#: includes/class-virastai-acr-logger.php:188
+msgid "No logs recorded yet."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:113
+msgid "View Details"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:125
+msgid "Prev"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:136
+msgid "Next"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:147
+#: includes/class-virastai-acr-admin.php:252
+msgid "Logger class is not available."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:171
+msgid "Security check failed."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:186
+msgid ""
+"Complete reset! Content, Title, and Excerpt progress markers removed. "
+"Sandbox data cleared."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:188
+msgid "No progress markers found to reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:195
+msgid "Title progress reset! Titles are marked for re-processing."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:197
+msgid "No Title progress markers found to reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:204
+msgid "Content progress reset! Posts are marked for content re-processing."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:206
+msgid "No Content progress markers found to reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:213
+msgid "Sandbox Titles cleared! The processing history was NOT reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:215
+msgid "No Sandbox Titles found to clear."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:222
+msgid "Sandbox Content cleared! The processing history was NOT reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:224
+msgid "No Sandbox Content found to clear."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:231
+msgid "Excerpt progress reset! Excerpts are marked for re-processing."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:233
+msgid "No Excerpt progress markers found to reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:240
+msgid "Sandbox Excerpts cleared! The processing history was NOT reset."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:242
+msgid "No Sandbox Excerpts found to clear."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:250
+msgid "System logs cleared successfully."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:267
+msgid "Virastai Auto Content Rewrite"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:268
+msgid "Virastai Rewrite"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:314
+#: includes/class-virastai-acr-admin.php:955
+msgid "General"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:318
+msgid "OpenRouter API Key"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:330
+msgid "Model ID"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:336
+msgid ""
+"Select a model fetched from OpenRouter. Fallbacks will show in case of "
+"network issues."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:341
+msgid "Base Prompt (Context)"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:344
+msgid "Base Context"
+msgstr ""
+
+#. translators: 1: placeholder for post title, 2: placeholder for post content
+#: includes/class-virastai-acr-admin.php:352
+#, php-format
+msgid ""
+"This context is sent to the API endpoint for every request. Place your "
+"placeholders here: %1$s, %2$s"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:357
+#: includes/class-virastai-acr-admin.php:956
+msgid "Automation"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:361
+msgid "Enable Automation"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:368
+msgid "Process content automatically in the background."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:372
+msgid "Run Frequency"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:376
+msgid "Items per Batch"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:382
+msgid "How many posts to rewrite per run."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:386
+msgid "Post Types"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:387
+msgid "Post Statuses"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:391
+msgid "Enable Sandbox Mode"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:398
+msgid ""
+"Safe Mode: Saves generated content to a custom field instead of overwriting "
+"live posts. Review changes in the post edit screen."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:404
+msgid "Allowed User Roles"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:410
+msgid ""
+"Select which user roles are allowed to see and use the Sandbox metabox in "
+"the post edit screens."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:415
+msgid "Content (Body) Options"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:419
+msgid "Rewrite Content"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:425
+msgid "Enable rewriting for the post body/content."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:431
+msgid "Skip Incomplete Posts"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:437
+msgid "Do not process if current Body content is empty."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:443
+msgid "Preserve Images"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:449
+msgid "Keep existing images and append them to the end of the new content."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:455
+msgid "Enable Formatting"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:461
+msgid "Convert Markdown syntax to clean HTML tags."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:467
+msgid "Content Instruction"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:474
+#: includes/class-virastai-acr-admin.php:511
+#: includes/class-virastai-acr-admin.php:564
+msgid ""
+"Instructions for the API endpoint. This is appended to the Base Context."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:480
+msgid "Rewrite Excerpt / Short Description"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:486
+msgid ""
+"Enable rewriting for regular post excerpts and WooCommerce product short "
+"descriptions."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:492
+#: includes/class-virastai-acr-admin.php:533
+msgid "Do not process if current content is empty"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:498
+msgid "Do not process excerpt if current post content is empty."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:504
+msgid "Excerpt Instruction"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:516
+#: includes/class-virastai-acr-admin.php:958
+msgid "Title Options"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:520
+msgid "Rewrite Title"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:527
+msgid "Enable rewriting for the post title."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:539
+msgid "Do not process title if current post content is empty."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:545
+msgid "Clean Title HTML"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:551
+msgid "Remove all HTML and markdown formatting from the generated title."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:557
+msgid "Title Instruction"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:569
+msgid "Log Settings"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:573
+msgid "Enable System Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:579
+msgid ""
+"Log all API requests, responses, errors, and system activity to a dedicated "
+"database table."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:586
+msgid "Log Retention Period"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:593
+msgid ""
+"Number of days to keep logs in the database. Set to 0 to keep logs "
+"indefinitely."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:632
+#: includes/class-virastai-acr-cron.php:53
+msgid "Every 1 Minute"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:633
+#: includes/class-virastai-acr-cron.php:57
+msgid "Every 5 Minutes"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:634
+#: includes/class-virastai-acr-cron.php:61
+msgid "Every 15 Minutes"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:635
+#: includes/class-virastai-acr-cron.php:65
+msgid "Every 30 Minutes"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:636
+msgid "Hourly"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:637
+msgid "Twice Daily"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:638
+msgid "Daily"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:748
+msgid "Toggle Visibility"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:817
+msgid "Reset to Default"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:957
+msgid "Content Options"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:959
+msgid "System Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:960
+msgid "Help"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:972
+msgid "Reset Progress Actions"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:973
+msgid ""
+"Clear completion markers to re-run rewriting processes on posts that have "
+"already been processed."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:977
+msgid "Reset ALL Progress"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:997
+msgid "Recent System Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1000
+msgid "Refresh Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1003
+msgid "Copy Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1006
+msgid "Clear Logs"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1015
+msgid "Date/Time"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1016
+msgid "Type"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1017
+msgid "Message"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1018
+msgid "Actions"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1041
+msgid "Documentation & Help Guide"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1048
+msgid "API Key & Model Selection"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1051
+msgid "Getting an API Key:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1053
+#, php-format
+msgid "Visit %s and sign up for an account."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1054
+msgid "Navigate to the Keys section and create a new API Key."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1055
+msgid ""
+"Copy the generated key, paste it into the OpenRouter API Key field in the "
+"General tab, and save your settings."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1057
+msgid "Selecting a Model:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1059
+msgid ""
+"After saving a valid API Key, the plugin automatically fetches and caches "
+"all available models from OpenRouter."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1060
+msgid ""
+"Choose your preferred text generation model from the Model ID dropdown "
+"select field."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1069
+msgid "Automation & Cron Engine"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1072
+msgid "How Automation Works:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1074
+msgid ""
+"The plugin uses WordPress Cron to process content rewriting in the "
+"background."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1075
+msgid ""
+"During each cron interval, the engine queries posts matching your selected "
+"Post Types and Post Statuses that have not been processed yet."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1077
+msgid "Key Configuration:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1079
+msgid ""
+"Enable Automation: Toggle this switch to activate or deactivate the "
+"background cron runner."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1080
+msgid ""
+"Run Frequency: Select how often the cron job executes background query runs."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1081
+msgid ""
+"Items per Batch: Set the maximum number of posts processed in a single run "
+"to prevent server timeouts."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1090
+msgid "Sandbox Review Mode"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1093
+msgid "What is Sandbox Mode?"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1095
+msgid ""
+"Sandbox Mode saves generated titles, content, and excerpts to preview fields "
+"instead of replacing live content directly in the database."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1096
+msgid ""
+"An interactive metabox appears on the post edit screens allowing you to "
+"review, regenerate, or copy generations."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1098
+msgid "Review Controls:"
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1100
+msgid "Allowed User Roles: Configure which roles can view and use the metabox."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1101
+msgid ""
+"Apply Generations: Overwrite the live post with the reviewed sandbox drafts."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1102
+msgid ""
+"Clear Generated: Clear the sandbox preview drafts and reset the progress "
+"markers."
+msgstr ""
+
+#: includes/class-virastai-acr-admin.php:1112
+msgid "Save Settings"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:81
+msgid "Are you sure you want to clear the generated sandbox content?"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:82
+msgid ""
+"Please save the post first before generating, as the content is retrieved "
+"from the database."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:83
+msgid ""
+"Warning: This action will overwrite your current post data with the "
+"generated content. You will lose access to the old data. Are you sure you "
+"want to proceed?"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:84
+msgid "Copied!"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:125
+msgid "Virastai Sandbox Review"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:159
+msgid "Generate All"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:165
+msgid "Generate Content"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:171
+msgid "Generate Title"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:177
+msgid "Generate Excerpt"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:182
+msgid "Clear Generated"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:186
+msgid "Processing..."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:193
+msgid "No content generated yet."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:209
+msgid "Generated Title:"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:211
+msgid "Copy Title"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:212
+#: includes/class-virastai-acr-metabox.php:224
+#: includes/class-virastai-acr-metabox.php:236
+msgid "Copy"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:221
+msgid "Generated Content:"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:223
+msgid "Copy Content"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:233
+msgid "Generated Excerpt / Short Description:"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:235
+msgid "Copy Excerpt"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:245
+msgid "Apply Generations"
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:263
+#: includes/class-virastai-acr-metabox.php:332
+#: includes/class-virastai-acr-metabox.php:359
+msgid "Invalid Post ID."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:272
+msgid "Post not found."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:278
+msgid "Post type not allowed."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:289
+msgid "Post status not allowed."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:319
+msgid "Generation failed or no changes made. Check logs."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:371
+msgid "No generated content found to apply."
+msgstr ""
+
+#: includes/class-virastai-acr-metabox.php:401
+msgid "Generations applied successfully."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Virastai Auto Content Rewrite With AI"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://wordpress.org/plugins/virastai-auto-content-rewrite-with-ai"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Connects to OpenRouter (Large Language Models) to rewrite or translate "
+"WooCommerce product content automatically."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "micromax"
+msgstr ""

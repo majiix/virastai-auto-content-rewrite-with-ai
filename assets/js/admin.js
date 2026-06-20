@@ -436,18 +436,6 @@ jQuery(document).ready(function ($) {
         e.preventDefault();
         $('#virastai-acr-form-reset-all').submit();
     });
-    $('#virastai-acr-tab-reset-title-btn').on('click', function(e) {
-        e.preventDefault();
-        $('#virastai-acr-form-reset-title').submit();
-    });
-    $('#virastai-acr-tab-reset-content-btn').on('click', function(e) {
-        e.preventDefault();
-        $('#virastai-acr-form-reset-content').submit();
-    });
-    $('#virastai-acr-tab-reset-excerpt-btn').on('click', function(e) {
-        e.preventDefault();
-        $('#virastai-acr-form-reset-excerpt').submit();
-    });
 
     $('#virastai-acr-copy-logs-btn').on('click', function(e) {
         e.preventDefault();

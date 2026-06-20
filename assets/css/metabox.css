@@ -208,3 +208,56 @@
     transform: translateY(0.5px);
     box-shadow: 0 2px 4px rgba(139, 92, 246, 0.1);
 }
+
+/* Copy buttons next to field labels */
+.virastai-acr-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.virastai-acr-field-header label {
+    margin-bottom: 0 !important;
+}
+
+.virastai-acr-copy-field-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+    height: 24px !important;
+    line-height: 24px !important;
+    padding: 0 8px !important;
+    cursor: pointer !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    color: #374151 !important;
+    font-weight: 550 !important;
+    transition: all 0.15s ease-in-out !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.virastai-acr-copy-field-btn:hover:not(:disabled) {
+    border-color: #6366f1 !important;
+    color: #6366f1 !important;
+    background: #f5f3ff !important;
+}
+
+.virastai-acr-copy-field-btn:active:not(:disabled) {
+    background: #ede9fe !important;
+}
+
+.virastai-acr-copy-field-btn:disabled {
+    opacity: 0.8 !important;
+    cursor: not-allowed !important;
+}
+
+.virastai-acr-copy-field-btn .dashicons {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+    line-height: 14px !important;
+}
+

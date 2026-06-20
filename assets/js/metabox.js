@@ -151,9 +151,12 @@ jQuery(document).ready(function ($) {
                     if (!data.title && !data.content && !data.excerpt) {
                         container.find('.virastai-acr-sandbox-fields').hide();
                         container.find('.virastai-acr-empty-msg').show();
+                        container.find('.virastai-acr-clear-btn').hide();
+                        container.find('.virastai-acr-metabox-apply-container').hide();
                     } else {
-                        // Only show apply button container after a successful process
+                        // Only show apply button container and clear button after a successful process
                         container.find('.virastai-acr-metabox-apply-container').show();
+                        container.find('.virastai-acr-clear-btn').show();
                     }
                 } else {
                     alert('Error: ' + response.data);
@@ -224,6 +227,7 @@ jQuery(document).ready(function ($) {
                     container.find('.virastai-acr-sandbox-fields').hide();
                     container.find('.virastai-acr-empty-msg').show();
                     container.find('.virastai-acr-metabox-apply-container').hide();
+                    container.find('.virastai-acr-clear-btn').hide();
                 } else {
                     alert('Error: ' + response.data);
                 }
@@ -280,6 +284,30 @@ jQuery(document).ready(function ($) {
                 loader.fadeOut();
             }
         });
+    });
+
+    // --- Copy Field Buttons ---
+    $(document).on('click', '.virastai-acr-copy-field-btn', function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const targetId = btn.data('target');
+        const targetField = $('#' + targetId);
+        
+        if (targetField.length) {
+            const value = targetField.val();
+            navigator.clipboard.writeText(value).then(function() {
+                const originalHtml = btn.html();
+                const copiedLabel = (typeof virastaiMetabox !== 'undefined' && virastaiMetabox.copiedText) ? virastaiMetabox.copiedText : 'Copied!';
+                btn.html('<span class="dashicons dashicons-yes" style="color: #10b981;"></span> ' + copiedLabel);
+                btn.prop('disabled', true);
+                setTimeout(function() {
+                    btn.html(originalHtml);
+                    btn.prop('disabled', false);
+                }, 2000);
+            }).catch(function(err) {
+                alert('Failed to copy text: ' + err);
+            });
+        }
     });
 
 });

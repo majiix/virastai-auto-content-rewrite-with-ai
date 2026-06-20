@@ -175,42 +175,78 @@ class Virastai_Acr_Admin_Sidebar {
 					<span class="stat-value"><?php echo esc_html( $total_count ); ?></span>
 				</div>
 				<?php if ( $enable_title_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Processed Titles:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value virastai-acr-stat-success"><?php echo esc_html( $processed_title_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-reset-title">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_reset_title" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Reset Title Progress', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $processed_title_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 				<?php if ( $enable_content_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Processed Content:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value virastai-acr-stat-success"><?php echo esc_html( $processed_content_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-reset-content">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_reset_content" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Reset Content Progress', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $processed_content_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 				<?php if ( $enable_excerpt_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Processed Excerpts:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value virastai-acr-stat-success"><?php echo esc_html( $processed_excerpt_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-reset-excerpt">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_reset_excerpt" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Reset Excerpt Progress', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $processed_excerpt_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 
 				<hr style="margin: 15px 0; border-top: 1px solid #e2e8f0;">
 				<h3 style="font-size: 13px; font-weight: 600; color: #4b5563; margin: 0 0 10px 0;"><?php esc_html_e( 'Sandbox Drafts (Pending Review)', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
 				<?php if ( $enable_title_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Sandbox Titles:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value" style="color: #6366f1; font-weight: 600;"><?php echo esc_html( $sandbox_title_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-clear-sandbox-title">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_clear_sandbox_title" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Delete Sandbox Titles', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $sandbox_title_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 				<?php if ( $enable_content_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Sandbox Content:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value" style="color: #6366f1; font-weight: 600;"><?php echo esc_html( $sandbox_content_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-clear-sandbox-content">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_clear_sandbox_content" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Delete Sandbox Content', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $sandbox_content_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 				<?php if ( $enable_excerpt_rewrite ) : ?>
-					<div class="virastai-acr-stat-row">
+					<div class="virastai-acr-stat-row" style="align-items: center;">
 						<span class="stat-label"><?php esc_html_e( 'Sandbox Excerpts:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
-						<span class="stat-value" style="color: #6366f1; font-weight: 600;"><?php echo esc_html( $sandbox_excerpt_count ); ?></span>
+						<form method="post" style="display:inline;" id="virastai-acr-form-clear-sandbox-excerpt">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<button type="submit" name="virastai_acr_clear_sandbox_excerpt" class="virastai-acr-stat-delete-btn" title="<?php esc_attr_e( 'Delete Sandbox Excerpts', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+								<span><?php echo esc_html( $sandbox_excerpt_count ); ?></span>
+								<span class="dashicons dashicons-trash"></span>
+							</button>
+						</form>
 					</div>
 				<?php endif; ?>
 
@@ -218,31 +254,6 @@ class Virastai_Acr_Admin_Sidebar {
 					<div class="virastai-acr-progress-bar-fill" style="width: <?php echo esc_attr( $percentage ); ?>%;"></div>
 				</div>
 				<p class="virastai-acr-progress-text"><?php echo esc_html( $percentage ); ?>% <?php esc_html_e( 'Complete', 'virastai-auto-content-rewrite-with-ai' ); ?></p>
-			</div>
-
-			<div class="virastai-acr-container virastai-acr-card-sidebar virastai-acr-mt-20">
-				<h2><?php esc_html_e( 'Actions', 'virastai-auto-content-rewrite-with-ai' ); ?></h2>
-
-				<div class="virastai-acr-flex-row virastai-acr-mt-20">
-					<form method="post" class="virastai-acr-flex-item" id="virastai-acr-form-clear-sandbox-title">
-						<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-						<button type="submit" name="virastai_acr_clear_sandbox_title" class="button button-secondary virastai-acr-btn-action virastai-acr-full-width virastai-acr-mb-10">
-							<span class="dashicons dashicons-no-alt"></span> <?php esc_html_e( 'Clear Sandbox Titles', 'virastai-auto-content-rewrite-with-ai' ); ?>
-						</button>
-					</form>
-					<form method="post" class="virastai-acr-flex-item" id="virastai-acr-form-clear-sandbox-content">
-						<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-						<button type="submit" name="virastai_acr_clear_sandbox_content" class="button button-secondary virastai-acr-btn-action virastai-acr-full-width virastai-acr-mb-10">
-							<span class="dashicons dashicons-no-alt"></span> <?php esc_html_e( 'Clear Sandbox Content', 'virastai-auto-content-rewrite-with-ai' ); ?>
-						</button>
-					</form>
-					<form method="post" class="virastai-acr-flex-item" id="virastai-acr-form-clear-sandbox-excerpt">
-						<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-						<button type="submit" name="virastai_acr_clear_sandbox_excerpt" class="button button-secondary virastai-acr-btn-action virastai-acr-full-width virastai-acr-mb-10">
-							<span class="dashicons dashicons-no-alt"></span> <?php esc_html_e( 'Clear Sandbox Excerpts', 'virastai-auto-content-rewrite-with-ai' ); ?>
-						</button>
-					</form>
-				</div>
 			</div>
 		</div>
 		<?php

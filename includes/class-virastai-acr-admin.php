@@ -289,6 +289,8 @@ class Virastai_Acr_Admin {
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_allowed_post_types', array( $this, 'virastai_acr_sanitize_array' ) );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_allowed_post_statuses', array( $this, 'virastai_acr_sanitize_array' ) );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_sandbox_mode', 'absint' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_allowed_roles', array( $this, 'virastai_acr_sanitize_array' ) );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_delete_on_uninstall', 'absint' );
 
 		// Prompts (General).
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_base_prompt_template', 'sanitize_textarea_field' );
@@ -310,7 +312,7 @@ class Virastai_Acr_Admin {
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_title_prompt_template', 'sanitize_textarea_field' );
 
 		// --- Section: API ---
-		add_settings_section( 'virastai_acr_api_section', __( 'API Configuration', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
+		add_settings_section( 'virastai_acr_api_section', __( 'General', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
 
 		add_settings_field(
 			'virastai_acr_openrouter_api_key',
@@ -353,7 +355,7 @@ class Virastai_Acr_Admin {
 		);
 
 		// --- Section: Automation ---
-		add_settings_section( 'virastai_acr_automation_section', __( 'Automation Settings', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
+		add_settings_section( 'virastai_acr_automation_section', __( 'Automation', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
 
 		add_settings_field(
 			'virastai_acr_cron_enabled',
@@ -382,19 +384,44 @@ class Virastai_Acr_Admin {
 			)
 		);
 
-		add_settings_field( 'virastai_acr_allowed_post_types', __( 'Post Types', 'virastai-auto-content-rewrite-with-ai' ), array( $this, 'virastai_acr_render_field_post_types' ), 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_automation_section', array( 'label_for' => 'virastai_acr_allowed_post_types' ) );
-		add_settings_field( 'virastai_acr_allowed_post_statuses', __( 'Post Statuses', 'virastai-auto-content-rewrite-with-ai' ), array( $this, 'virastai_acr_render_field_post_statuses' ), 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_automation_section', array( 'label_for' => 'virastai_acr_allowed_post_statuses' ) );
+		add_settings_field( 'virastai_acr_allowed_post_types', __( 'Post Types', 'virastai-auto-content-rewrite-with-ai' ), array( $this, 'virastai_acr_render_field_post_types' ), 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_api_section', array( 'label_for' => 'virastai_acr_allowed_post_types' ) );
+		add_settings_field( 'virastai_acr_allowed_post_statuses', __( 'Post Statuses', 'virastai-auto-content-rewrite-with-ai' ), array( $this, 'virastai_acr_render_field_post_statuses' ), 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_api_section', array( 'label_for' => 'virastai_acr_allowed_post_statuses' ) );
 
 		add_settings_field(
 			'virastai_acr_enable_sandbox_mode',
 			__( 'Enable Sandbox Mode', 'virastai-auto-content-rewrite-with-ai' ),
 			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
 			'virastai-auto-content-rewrite-with-ai',
-			'virastai_acr_automation_section',
+			'virastai_acr_api_section',
 			array(
 				'label_for'   => 'virastai_acr_enable_sandbox_mode',
 				'default'     => 0,
 				'description' => __( 'Safe Mode: Saves generated content to a custom field instead of overwriting live posts. Review changes in the post edit screen.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_allowed_roles',
+			__( 'Allowed User Roles', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_user_roles' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_api_section',
+			array(
+				'label_for'   => 'virastai_acr_allowed_roles',
+				'description' => __( 'Select which user roles are allowed to see and use the Sandbox metabox in the post edit screens.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_delete_on_uninstall',
+			__( 'Delete Data on Uninstall', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_danger_checkbox' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_api_section',
+			array(
+				'label_for'   => 'virastai_acr_delete_on_uninstall',
+				'default'     => 0,
+				'description' => __( 'WARNING: Checking this option will permanently delete all logs, options, and sandbox generation data from the database when you delete the plugin. This action is irreversible.', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 
@@ -693,6 +720,54 @@ class Virastai_Acr_Admin {
 	}
 
 	/**
+	 * Render User Roles Checkboxes.
+	 */
+	public function virastai_acr_render_field_user_roles( $args ) {
+		$wp_roles    = wp_roles();
+		$all_roles   = $wp_roles->get_names();
+		$saved_roles = get_option( 'virastai_acr_allowed_roles', array( 'administrator', 'editor' ) );
+
+		if ( ! is_array( $saved_roles ) ) {
+			$saved_roles = array();
+		}
+
+		$desc = isset( $args['description'] ) ? $args['description'] : '';
+
+		echo '<div class="virastai-acr-checkbox-grid">';
+		foreach ( $all_roles as $role_slug => $role_name ) {
+			?>
+			<label class="virastai-acr-checkbox-card <?php echo in_array( $role_slug, $saved_roles, true ) ? 'active' : ''; ?>">
+				<input type="checkbox" name="virastai_acr_allowed_roles[]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( in_array( $role_slug, $saved_roles, true ) ); ?>>
+				<span class="virastai-acr-pt-label"><?php echo esc_html( $role_name ); ?></span>
+				<span class="virastai-acr-pt-name"><?php echo esc_html( $role_slug ); ?></span>
+			</label>
+			<?php
+		}
+		echo '</div>';
+		if ( $desc ) {
+			echo '<p class="description" style="margin-top: 10px;">' . wp_kses_post( $desc ) . '</p>';
+		}
+	}
+
+	/**
+	 * Render Danger Toggle Checkbox.
+	 */
+	public function virastai_acr_render_field_danger_checkbox( $args ) {
+		$default = isset( $args['default'] ) ? $args['default'] : 0;
+		$option  = get_option( $args['label_for'], $default );
+		$desc    = isset( $args['description'] ) ? $args['description'] : '';
+		?>
+		<label class="virastai-acr-danger-checkbox-wrapper">
+			<input type="checkbox" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="1" <?php checked( $option, 1 ); ?> class="virastai-acr-danger-checkbox">
+			<span class="virastai-acr-danger-label-text"><?php esc_html_e( 'Delete all plugin options and data upon deletion', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
+		</label>
+		<?php if ( $desc ) : ?>
+			<p class="description" style="color: #dc2626; font-weight: 500; margin-top: 5px;"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
 	 * Render masked text/password input for API Key.
 	 */
 	public function virastai_acr_render_field_masked_input( $args ) {
@@ -909,15 +984,16 @@ class Virastai_Acr_Admin {
 
 							<!-- Tabs Nav -->
 							<h2 class="nav-tab-wrapper virastai-acr-tabs-nav">
-								<a href="#tab-api" class="nav-tab nav-tab-active" data-tab="api"><?php esc_html_e( 'API Configuration', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
-								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation & Targeting', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php esc_html_e( 'General', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-content" class="nav-tab" data-tab="content"><?php esc_html_e( 'Content Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-title" class="nav-tab" data-tab="title"><?php esc_html_e( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-logs" class="nav-tab" data-tab="logs"><?php esc_html_e( 'System Logs', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-help" class="nav-tab" data-tab="help"><?php esc_html_e( 'Help', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 							</h2>
 
 							<!-- Tab Contents -->
-							<div id="tab-api" class="virastai-acr-tab-content active">
+							<div id="tab-general" class="virastai-acr-tab-content active">
 								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_api_section' ); ?>
 							</div>
 
@@ -931,15 +1007,6 @@ class Virastai_Acr_Admin {
 									<div style="display: flex; flex-wrap: wrap; gap: 10px;">
 										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-danger" id="virastai-acr-tab-reset-all-btn">
 											<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Reset ALL Progress', 'virastai-auto-content-rewrite-with-ai' ); ?>
-										</button>
-										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-title-btn">
-											<span class="dashicons dashicons-heading"></span> <?php esc_html_e( 'Reset Titles', 'virastai-auto-content-rewrite-with-ai' ); ?>
-										</button>
-										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-content-btn">
-											<span class="dashicons dashicons-editor-justify"></span> <?php esc_html_e( 'Reset Content', 'virastai-auto-content-rewrite-with-ai' ); ?>
-										</button>
-										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-excerpt-btn">
-											<span class="dashicons dashicons-editor-alignleft"></span> <?php esc_html_e( 'Reset Excerpts', 'virastai-auto-content-rewrite-with-ai' ); ?>
 										</button>
 									</div>
 								</div>
@@ -1001,6 +1068,87 @@ class Virastai_Acr_Admin {
 								</div>
 							</div>
 
+							<div id="tab-help" class="virastai-acr-tab-content">
+								<div class="virastai-acr-help-container">
+									<h2 style="margin-bottom: 20px; color: #111827; font-size: 18px; font-weight: 600;"><?php esc_html_e( 'Documentation & Help Guide', 'virastai-auto-content-rewrite-with-ai' ); ?></h2>
+									
+									<div class="virastai-acr-help-grid">
+										<!-- Card 1: API & Model Setup -->
+										<div class="virastai-acr-help-card">
+											<div class="help-card-header">
+												<span class="dashicons dashicons-key"></span>
+												<h3><?php esc_html_e( 'API Key & Model Selection', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+											</div>
+											<div class="help-card-body">
+												<p><strong><?php esc_html_e( 'Getting an API Key:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ol>
+													<li>
+														<?php
+														echo wp_kses_post(
+															sprintf(
+																/* translators: %s: Link to OpenRouter homepage */
+																__( 'Visit %s and sign up for an account.', 'virastai-auto-content-rewrite-with-ai' ),
+																'<a href="https://openrouter.ai/" target="_blank" rel="noopener">OpenRouter.ai</a>'
+															)
+														);
+														?>
+													</li>
+													<li><?php esc_html_e( 'Navigate to the Keys section and create a new API Key.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Copy the generated key, paste it into the OpenRouter API Key field in the General tab, and save your settings.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ol>
+												<p style="margin-top: 15px;"><strong><?php esc_html_e( 'Selecting a Model:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ul>
+													<li><?php esc_html_e( 'After saving a valid API Key, the plugin automatically fetches and caches all available models from OpenRouter.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Choose your preferred text generation model from the Model ID dropdown select field.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ul>
+											</div>
+										</div>
+
+										<!-- Card 2: Automation -->
+										<div class="virastai-acr-help-card">
+											<div class="help-card-header">
+												<span class="dashicons dashicons-clock"></span>
+												<h3><?php esc_html_e( 'Automation & Cron Engine', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+											</div>
+											<div class="help-card-body">
+												<p><strong><?php esc_html_e( 'How Automation Works:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ul>
+													<li><?php esc_html_e( 'The plugin uses WordPress Cron to process content rewriting in the background.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'During each cron interval, the engine queries posts matching your selected Post Types and Post Statuses that have not been processed yet.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ul>
+												<p style="margin-top: 15px;"><strong><?php esc_html_e( 'Key Configuration:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ul>
+													<li><?php esc_html_e( 'Enable Automation: Toggle this switch to activate or deactivate the background cron runner.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Run Frequency: Select how often the cron job executes background query runs.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Items per Batch: Set the maximum number of posts processed in a single run to prevent server timeouts.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ul>
+											</div>
+										</div>
+
+										<!-- Card 3: Sandbox Mode -->
+										<div class="virastai-acr-help-card">
+											<div class="help-card-header">
+												<span class="dashicons dashicons-visibility"></span>
+												<h3><?php esc_html_e( 'Sandbox Review Mode', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+											</div>
+											<div class="help-card-body">
+												<p><strong><?php esc_html_e( 'What is Sandbox Mode?', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ul>
+													<li><?php esc_html_e( 'Sandbox Mode saves generated titles, content, and excerpts to preview fields instead of replacing live content directly in the database.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'An interactive metabox appears on the post edit screens allowing you to review, regenerate, or copy generations.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ul>
+												<p style="margin-top: 15px;"><strong><?php esc_html_e( 'Review Controls:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<ul>
+													<li><?php esc_html_e( 'Allowed User Roles: Configure which roles can view and use the metabox.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Apply Generations: Overwrite the live post with the reviewed sandbox drafts.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Clear Generated: Clear the sandbox preview drafts and reset the progress markers.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
 							<div class="virastai-acr-footer-actions">
 								<button type="submit" name="submit" id="submit" class="virastai-acr-btn-2026 virastai-acr-btn-2026-primary">
 									<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save Settings', 'virastai-auto-content-rewrite-with-ai' ); ?>
@@ -1014,18 +1162,6 @@ class Virastai_Acr_Admin {
 						<form method="post" id="virastai-acr-form-reset-all" style="display: none;">
 							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
 							<input type="hidden" name="virastai_acr_reset_progress" value="1">
-						</form>
-						<form method="post" id="virastai-acr-form-reset-title" style="display: none;">
-							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-							<input type="hidden" name="virastai_acr_reset_title" value="1">
-						</form>
-						<form method="post" id="virastai-acr-form-reset-content" style="display: none;">
-							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-							<input type="hidden" name="virastai_acr_reset_content" value="1">
-						</form>
-						<form method="post" id="virastai-acr-form-reset-excerpt" style="display: none;">
-							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
-							<input type="hidden" name="virastai_acr_reset_excerpt" value="1">
 						</form>
 					</div>
 				</div>

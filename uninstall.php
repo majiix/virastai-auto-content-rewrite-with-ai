@@ -14,6 +14,12 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 wp_clear_scheduled_hook( 'virastai_acr_process_content_event' );
 wp_clear_scheduled_hook( 'virastai_acr_daily_cleanup_event' );
 
+// Check if user allowed deleting options and data on uninstall.
+$virastai_acr_delete_data = get_option( 'virastai_acr_delete_on_uninstall', 0 );
+if ( ! $virastai_acr_delete_data ) {
+	return;
+}
+
 // 2. Delete Plugin Options.
 $virastai_options_to_delete = array(
 	'virastai_acr_openrouter_api_key',
@@ -39,6 +45,8 @@ $virastai_options_to_delete = array(
 	'virastai_acr_remove_title_html',
 	'virastai_acr_title_prompt_template',
 	'virastai_acr_enable_sandbox_mode',
+	'virastai_acr_allowed_roles',
+	'virastai_acr_delete_on_uninstall',
 );
 
 foreach ( $virastai_options_to_delete as $virastai_option_name ) {
@@ -60,4 +68,4 @@ delete_transient( 'virastai_acr_models_cache' );
 global $wpdb;
 $virastai_table_name = esc_sql( $wpdb->prefix . 'virastai_acr_logs' );
 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
-$wpdb->query( "DROP TABLE IF EXISTS $virastai_table_name" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$wpdb->query( "DROP TABLE IF EXISTS $virastai_table_name" );

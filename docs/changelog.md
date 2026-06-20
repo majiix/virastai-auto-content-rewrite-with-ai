@@ -102,3 +102,48 @@ step 18:
 step 19:
 1- Wrapped all table name assignments in direct database queries with esc_sql() to fix PluginCheck warnings.
 2- Standardized readme.txt to adhere to WordPress.org repository standards.
+
+step 20:
+1- Refactored phpcs ignore comments by removing conflicting inline comments that were overriding block ignores.
+
+step 21:
+1- Replaced line-level phpcs ignores with block-level disable/enable flags to correctly suppress multiline statement warnings in logger queries.
+
+step 22:
+1- Added individual clipboard copy buttons for each generated Sandbox field (Title, Content, Excerpt) in the post edit metabox.
+2- Added Settings configuration to restrict access to the Sandbox metabox by user roles.
+
+step 23:
+1- Updated Sandbox metabox buttons logic to show the Apply Generations button when any content is generated, persisting across page reloads.
+2- Modified Clear Generated button in metabox to hide dynamically if no sandbox content is present.
+3- Renamed API Configuration tab and section to General.
+4- Renamed Automation & Targeting tab and section to Automation.
+5- Relocated Allowed User Roles, Post Types, Post Statuses, and Enable Sandbox Mode options to the General tab.
+6- Aligned the API key field visibility toggle button vertically middle in the settings interface.
+
+step 24:
+1- Replaced static sandbox statistics count values in the sidebar with inline forms and submit buttons featuring trash icons.
+2- Removed the duplicate "Actions" card and its buttons from the admin sidebar page.
+
+step 25:
+1- Converted static processed statistics count values (Titles, Content, Excerpts) in the sidebar to inline submit buttons featuring trash icons.
+2- Deleted the individual "Reset Titles", "Reset Content", and "Reset Excerpts" buttons from the Automation settings tab.
+3- Removed the duplicate hidden proxy forms and script click listeners corresponding to these deleted buttons.
+
+step 26:
+1- Relocated the Post Statuses setting from the General tab back to the Automation tab.
+
+step 27:
+1- Restricted Sandbox metabox registration, asset loading, and generation AJAX endpoint execution based on configured Post Types, Allowed User Roles, and Post Statuses options.
+
+step 28:
+1- Relocated the Post Statuses setting from the Automation tab to the General tab.
+
+step 29:
+1- Added a "Delete Data on Uninstall" settings option under the General configuration tab.
+2- Styled the delete option in a red danger checkbox format with warning details.
+3- Added conditional checks in the uninstall hook to skip options, logs table, cache, and metadata deletion unless the option is checked.
+
+step 30:
+1- Prefixed the global `$delete_data` variable in uninstall.php to `$virastai_acr_delete_data` to conform with global variable prefix standards.
+2- Added translators comment and output escaping using `wp_kses_post` on the OpenRouter signup text link in the help tab.

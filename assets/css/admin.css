@@ -140,7 +140,7 @@
 .virastai-acr-masked-input-wrapper .virastai-acr-toggle-visibility-btn {
     position: absolute;
     right: 4px;
-    top: 50%;
+    top: 30%;
     transform: translateY(-50%);
     background: none !important;
     border: none !important;
@@ -151,9 +151,16 @@
     height: 28px !important;
     width: 28px !important;
     min-height: auto !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+.virastai-acr-masked-input-wrapper .virastai-acr-toggle-visibility-btn .dashicons {
+    vertical-align: middle !important;
+    display: inline-block !important;
     margin: 0 !important;
 }
 
@@ -481,7 +488,7 @@ input:checked + .virastai-acr-slider:before {
     text-align: left;
 }
 
-.virastai-acr-logs-table th, 
+.virastai-acr-logs-table th,
 .virastai-acr-logs-table td {
     padding: 12px 18px;
     border-bottom: 1px solid #f0f0f1;
@@ -623,7 +630,7 @@ input:checked + .virastai-acr-slider:before {
 }
 
 /* Sidebar action button custom designs and general 2026 button systems */
-.virastai-acr-btn-2026, 
+.virastai-acr-btn-2026,
 .virastai-acr-btn-action {
     display: inline-flex !important;
     align-items: center !important;
@@ -893,6 +900,148 @@ body.virastai-acr-modal-open {
 }
 .virastai-acr-json-null {
     color: #7c3aed !important;
+}
+
+.virastai-acr-stat-delete-btn {
+    background: #fef2f2 !important;
+    border: 1px solid #fee2e2 !important;
+    color: #dc2626 !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    line-height: 1.4 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    margin: 0 !important;
+}
+
+.virastai-acr-stat-delete-btn:hover {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+    color: #b91c1c !important;
+}
+
+.virastai-acr-stat-delete-btn .dashicons {
+    font-size: 13px !important;
+    width: 13px !important;
+    height: 13px !important;
+    line-height: 13px !important;
+    vertical-align: middle !important;
+}
+
+/* Help Tab Guide Styles */
+.virastai-acr-help-container {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.7);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+.virastai-acr-help-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.virastai-acr-help-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.virastai-acr-help-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+.help-card-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    padding: 16px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.help-card-header .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.help-card-header h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.help-card-body {
+    padding: 20px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.help-card-body p {
+    margin: 0 0 10px 0;
+}
+
+.help-card-body p:last-of-type {
+    margin-bottom: 0;
+}
+
+.help-card-body ol, .help-card-body ul {
+    margin: 0 0 10px 0;
+    padding-left: 20px;
+}
+
+.help-card-body ol li, .help-card-body ul li {
+    margin-bottom: 6px;
+}
+
+.help-card-body ol li:last-child, .help-card-body ul li:last-child {
+    margin-bottom: 0;
+}
+
+.help-card-body a {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.help-card-body a:hover {
+    text-decoration: underline;
+}
+
+/* Danger settings checkbox styling */
+.virastai-acr-danger-checkbox-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #dc2626;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.virastai-acr-danger-checkbox {
+    border-color: #fca5a5 !important;
+}
+
+.virastai-acr-danger-checkbox:checked {
+    background-color: #dc2626 !important;
+    border-color: #dc2626 !important;
 }
 
 

@@ -35,6 +35,27 @@ class Virastai_Acr_Metabox {
 			return;
 		}
 
+		if ( ! self::current_user_has_access() ) {
+			return;
+		}
+
+		// Check post type
+		$allowed_post_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
+		if ( ! is_array( $allowed_post_types ) || ! in_array( $post->post_type, $allowed_post_types, true ) ) {
+			return;
+		}
+
+		// Check post status
+		$allowed_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
+		if ( ! is_array( $allowed_post_statuses ) ) {
+			$allowed_post_statuses = array( 'publish' );
+		}
+		$post_status = $post->post_status;
+		$check_status = ( 'auto-draft' === $post_status ) ? 'draft' : $post_status;
+		if ( ! in_array( $check_status, $allowed_post_statuses, true ) && ! in_array( $post_status, $allowed_post_statuses, true ) ) {
+			return;
+		}
+
 		wp_enqueue_style(
 			'virastai-acr-metabox-css',
 			VIRASTAI_ACR_URL . 'assets/css/metabox.css',
@@ -60,6 +81,7 @@ class Virastai_Acr_Metabox {
 				'confirmClear'  => __( 'Are you sure you want to clear the generated sandbox content?', 'virastai-auto-content-rewrite-with-ai' ),
 				'savePostFirst' => __( 'Please save the post first before generating, as the content is retrieved from the database.', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmApply'  => __( 'Warning: This action will overwrite your current post data with the generated content. You will lose access to the old data. Are you sure you want to proceed?', 'virastai-auto-content-rewrite-with-ai' ),
+				'copiedText'    => __( 'Copied!', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 	}
@@ -68,14 +90,33 @@ class Virastai_Acr_Metabox {
 	 * Register the metabox for allowed post types.
 	 */
 	public function virastai_acr_add_sandbox_metabox() {
+		global $post;
+
 		$sandbox_enabled = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
 		if ( ! $sandbox_enabled ) {
+			return;
+		}
+
+		if ( ! self::current_user_has_access() ) {
 			return;
 		}
 
 		$allowed_post_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
 		if ( ! is_array( $allowed_post_types ) ) {
 			return;
+		}
+
+		// Check allowed statuses for current post if available
+		if ( $post && isset( $post->post_status ) ) {
+			$allowed_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
+			if ( ! is_array( $allowed_post_statuses ) ) {
+				$allowed_post_statuses = array( 'publish' );
+			}
+			$post_status = $post->post_status;
+			$check_status = ( 'auto-draft' === $post_status ) ? 'draft' : $post_status;
+			if ( ! in_array( $check_status, $allowed_post_statuses, true ) && ! in_array( $post_status, $allowed_post_statuses, true ) ) {
+				return;
+			}
 		}
 
 		foreach ( $allowed_post_types as $post_type ) {
@@ -103,6 +144,8 @@ class Virastai_Acr_Metabox {
 		$enable_title_rewrite   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
 		$enable_content_rewrite = get_option( 'virastai_acr_enable_content_rewrite', 1 );
 		$enable_excerpt_rewrite = get_option( 'virastai_acr_enable_excerpt_rewrite', 0 );
+
+		$has_sandbox_content = ! empty( $sandbox_title ) || ! empty( $sandbox_content ) || ! empty( $sandbox_excerpt );
 
 		?>
 		<div class="virastai-acr-metabox-wrapper" id="virastai-acr-metabox-container">
@@ -135,7 +178,7 @@ class Virastai_Acr_Metabox {
 					</button>
 				<?php endif; ?>
 
-				<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-danger virastai-acr-clear-btn" style="float:right;">
+				<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-danger virastai-acr-clear-btn" style="float:right;<?php echo $has_sandbox_content ? '' : ' display: none;'; ?>">
 					<span class="dashicons dashicons-trash"></span> <?php esc_html_e( 'Clear Generated', 'virastai-auto-content-rewrite-with-ai' ); ?>
 				</button>
 				<div style="clear:both;"></div>
@@ -146,7 +189,7 @@ class Virastai_Acr_Metabox {
 
 			<hr style="margin: 15px 0;">
 
-			<?php if ( empty( $sandbox_title ) && empty( $sandbox_content ) && empty( $sandbox_excerpt ) ) : ?>
+			<?php if ( ! $has_sandbox_content ) : ?>
 				<p class="virastai-acr-empty-msg"><?php esc_html_e( 'No content generated yet.', 'virastai-auto-content-rewrite-with-ai' ); ?></p>
 			<?php endif; ?>
 
@@ -161,28 +204,43 @@ class Virastai_Acr_Metabox {
 
 			<div class="virastai-acr-sandbox-fields" <?php echo ( empty( $sandbox_title ) && empty( $sandbox_content ) && empty( $sandbox_excerpt ) ) ? 'style="display:none;"' : ''; ?>>
 				<div class="virastai-acr-field-group virastai-acr-title-group" <?php echo empty( $sandbox_title ) ? 'style="display:none;"' : ''; ?>>
-					<label for="virastai_acr_sandbox_title_field">
-						<?php esc_html_e( 'Generated Title:', 'virastai-auto-content-rewrite-with-ai' ); ?>
-					</label>
+					<div class="virastai-acr-field-header">
+						<label for="virastai_acr_sandbox_title_field">
+							<?php esc_html_e( 'Generated Title:', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</label>
+						<button type="button" class="virastai-acr-copy-field-btn" data-target="virastai_acr_sandbox_title_field" title="<?php esc_attr_e( 'Copy Title', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+							<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Copy', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</button>
+					</div>
 					<input type="text" id="virastai_acr_sandbox_title_field" class="large-text" value="<?php echo esc_attr( $sandbox_title ); ?>" readonly>
 				</div>
 
 				<div class="virastai-acr-field-group virastai-acr-content-group" <?php echo empty( $sandbox_content ) ? 'style="display:none;"' : ''; ?>>
-					<label for="virastai_acr_sandbox_content_field">
-						<?php esc_html_e( 'Generated Content:', 'virastai-auto-content-rewrite-with-ai' ); ?>
-					</label>
+					<div class="virastai-acr-field-header">
+						<label for="virastai_acr_sandbox_content_field">
+							<?php esc_html_e( 'Generated Content:', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</label>
+						<button type="button" class="virastai-acr-copy-field-btn" data-target="virastai_acr_sandbox_content_field" title="<?php esc_attr_e( 'Copy Content', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+							<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Copy', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</button>
+					</div>
 					<textarea id="virastai_acr_sandbox_content_field" class="large-text" rows="15" readonly><?php echo esc_textarea( $sandbox_content ); ?></textarea>
 				</div>
 
 				<div class="virastai-acr-field-group virastai-acr-excerpt-group" <?php echo empty( $sandbox_excerpt ) ? 'style="display:none;"' : ''; ?>>
-					<label for="virastai_acr_sandbox_excerpt_field">
-						<?php esc_html_e( 'Generated Excerpt / Short Description:', 'virastai-auto-content-rewrite-with-ai' ); ?>
-					</label>
-					<textarea id="virastai_acr_sandbox_excerpt_field" class="large-text" rows="5" readonly><?php echo esc_textarea( $sandbox_excerpt ); ?></textarea>
+					<div class="virastai-acr-field-header">
+						<label for="virastai_acr_sandbox_excerpt_field">
+							<?php esc_html_e( 'Generated Excerpt / Short Description:', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</label>
+						<button type="button" class="virastai-acr-copy-field-btn" data-target="virastai_acr_sandbox_excerpt_field" title="<?php esc_attr_e( 'Copy Excerpt', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+							<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Copy', 'virastai-auto-content-rewrite-with-ai' ); ?>
+						</button>
+					</div>
+					<textarea id="virastai_acr_sandbox_excerpt_field" class="large-text" rows="3" readonly><?php echo esc_textarea( $sandbox_excerpt ); ?></textarea>
 				</div>
 
 				<!-- Save and Apply Generations Button -->
-				<div class="virastai-acr-metabox-apply-container" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: none;">
+				<div class="virastai-acr-metabox-apply-container" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;<?php echo $has_sandbox_content ? '' : ' display: none;'; ?>">
 					<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-primary virastai-acr-apply-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15), 0 2px 4px -1px rgba(16, 185, 129, 0.1) !important;">
 						<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Apply Generations', 'virastai-auto-content-rewrite-with-ai' ); ?>
 					</button>
@@ -205,13 +263,30 @@ class Virastai_Acr_Metabox {
 			wp_send_json_error( __( 'Invalid Post ID.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) || ! self::current_user_has_access() ) {
 			wp_send_json_error( __( 'Permission denied.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post ) {
 			wp_send_json_error( __( 'Post not found.', 'virastai-auto-content-rewrite-with-ai' ) );
+		}
+
+		// Check post type
+		$allowed_post_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
+		if ( ! is_array( $allowed_post_types ) || ! in_array( $post->post_type, $allowed_post_types, true ) ) {
+			wp_send_json_error( __( 'Post type not allowed.', 'virastai-auto-content-rewrite-with-ai' ) );
+		}
+
+		// Check post status
+		$allowed_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
+		if ( ! is_array( $allowed_post_statuses ) ) {
+			$allowed_post_statuses = array( 'publish' );
+		}
+		$post_status = $post->post_status;
+		$check_status = ( 'auto-draft' === $post_status ) ? 'draft' : $post_status;
+		if ( ! in_array( $check_status, $allowed_post_statuses, true ) && ! in_array( $post_status, $allowed_post_statuses, true ) ) {
+			wp_send_json_error( __( 'Post status not allowed.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
 		$rewriter = new Virastai_Acr_Rewriter();
@@ -257,7 +332,7 @@ class Virastai_Acr_Metabox {
 			wp_send_json_error( __( 'Invalid Post ID.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) || ! self::current_user_has_access() ) {
 			wp_send_json_error( __( 'Permission denied.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
@@ -284,7 +359,7 @@ class Virastai_Acr_Metabox {
 			wp_send_json_error( __( 'Invalid Post ID.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) || ! self::current_user_has_access() ) {
 			wp_send_json_error( __( 'Permission denied.', 'virastai-auto-content-rewrite-with-ai' ) );
 		}
 
@@ -324,5 +399,31 @@ class Virastai_Acr_Metabox {
 		delete_post_meta( $post_id, '_virastai_acr_sandbox_excerpt' );
 
 		wp_send_json_success( __( 'Generations applied successfully.', 'virastai-auto-content-rewrite-with-ai' ) );
+	}
+
+	/**
+	 * Check if current user has role permission to access Sandbox metabox.
+	 *
+	 * @return bool
+	 */
+	public static function current_user_has_access() {
+		$user = wp_get_current_user();
+		if ( ! $user || ! $user->exists() ) {
+			return false;
+		}
+
+		$allowed_roles = get_option( 'virastai_acr_allowed_roles', array( 'administrator', 'editor' ) );
+		if ( ! is_array( $allowed_roles ) ) {
+			$allowed_roles = array( 'administrator', 'editor' );
+		}
+
+		$user_roles = (array) $user->roles;
+		foreach ( $user_roles as $role ) {
+			if ( in_array( $role, $allowed_roles, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
