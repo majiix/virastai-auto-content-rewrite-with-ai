@@ -19,6 +19,9 @@ class Virastai_Acr_Admin {
 		add_action( 'admin_init', array( $this, 'virastai_acr_register_settings' ) );
 		add_action( 'admin_init', array( $this, 'virastai_acr_handle_reset_actions' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'virastai_acr_enqueue_assets' ) );
+
+		// AJAX Action
+		add_action( 'wp_ajax_virastai_acr_refresh_logs', array( $this, 'handle_ajax_refresh_logs' ) );
 	}
 
 	/**
@@ -57,8 +60,92 @@ class Virastai_Acr_Admin {
 				'confirmResetContent'        => __( 'Reset Content progress only?', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmClearSandboxTitle'   => __( 'Are you sure you want to delete ALL Sandbox Titles? This action cannot be undone.', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmClearSandboxContent' => __( 'Are you sure you want to delete ALL Sandbox Content? This action cannot be undone.', 'virastai-auto-content-rewrite-with-ai' ),
+				'ajaxUrl'                    => admin_url( 'admin-ajax.php' ),
+				'nonce'                      => wp_create_nonce( 'virastai_acr_admin_action' ),
 			)
 		);
+	}
+
+	/**
+	 * Handle AJAX request to refresh system logs.
+	 */
+	public function handle_ajax_refresh_logs() {
+		check_ajax_referer( 'virastai_acr_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'virastai-auto-content-rewrite-with-ai' ) );
+		}
+
+		$paged = isset( $_POST['paged'] ) ? max( 1, intval( $_POST['paged'] ) ) : 1;
+		$limit = 20;
+		$offset = ( $paged - 1 ) * $limit;
+
+		if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+			$logs = Virastai_Acr_Logger::get_logs( $limit, $offset );
+			$total_logs = Virastai_Acr_Logger::count_logs();
+			$total_pages = ceil( $total_logs / $limit );
+
+			// Build rows HTML
+			$rows_html = '';
+			if ( empty( $logs ) ) {
+				$rows_html .= '<tr><td colspan="4" class="virastai-acr-no-logs">' . esc_html__( 'No logs recorded yet.', 'virastai-auto-content-rewrite-with-ai' ) . '</td></tr>';
+			} else {
+				foreach ( $logs as $log ) {
+					$type_class = 'type-' . esc_attr( strtolower( $log['type'] ) );
+					$rows_html .= '<tr class="virastai-acr-log-row" data-id="' . intval( $log['id'] ) . '">';
+					$rows_html .= '<td class="col-date">' . esc_html( $log['created_at'] ) . '</td>';
+					$rows_html .= '<td class="col-type"><span class="log-badge ' . $type_class . '">' . esc_html( strtoupper( $log['type'] ) ) . '</span></td>';
+					
+					// Message details
+					$message = $log['message'];
+					$is_long = strlen( $message ) > 120;
+					$preview = $is_long ? substr( $message, 0, 120 ) . '...' : $message;
+					
+					$rows_html .= '<td class="col-message">';
+					$rows_html .= '<div class="log-preview">' . esc_html( $preview ) . '</div>';
+					if ( $is_long ) {
+						$rows_html .= '<div class="log-details" style="display:none;"><pre>' . esc_html( $message ) . '</pre></div>';
+					}
+					$rows_html .= '</td>';
+					
+					$rows_html .= '<td class="col-actions">';
+					if ( $is_long ) {
+						$rows_html .= '<button type="button" class="button button-small virastai-acr-toggle-log-btn">' . esc_html__( 'View Details', 'virastai-auto-content-rewrite-with-ai' ) . '</button>';
+					}
+					$rows_html .= '</td>';
+					$rows_html .= '</tr>';
+				}
+			}
+
+			// Build pagination HTML
+			$pagination_html = '';
+			if ( $total_pages > 1 ) {
+				$pagination_html .= '<div class="virastai-acr-pagination">';
+				if ( $paged > 1 ) {
+					$pagination_html .= '<a href="#" class="page-numbers prev" data-page="' . ( $paged - 1 ) . '">&laquo; ' . esc_html__( 'Prev', 'virastai-auto-content-rewrite-with-ai' ) . '</a>';
+				}
+				
+				$start = max( 1, $paged - 2 );
+				$end = min( $total_pages, $paged + 2 );
+				for ( $i = $start; $i <= $end; $i++ ) {
+					$active_class = ( $i === $paged ) ? 'current' : '';
+					$pagination_html .= '<a href="#" class="page-numbers ' . $active_class . '" data-page="' . $i . '">' . $i . '</a>';
+				}
+
+				if ( $paged < $total_pages ) {
+					$pagination_html .= '<a href="#" class="page-numbers next" data-page="' . ( $paged + 1 ) . '">' . esc_html__( 'Next', 'virastai-auto-content-rewrite-with-ai' ) . ' &raquo;</a>';
+				}
+				$pagination_html .= '</div>';
+			}
+
+			wp_send_json_success( array(
+				'rows_html'       => $rows_html,
+				'pagination_html' => $pagination_html,
+				'raw_logs'        => Virastai_Acr_Logger::get_logs_formatted(),
+			) );
+		} else {
+			wp_send_json_error( __( 'Logger class is not available.', 'virastai-auto-content-rewrite-with-ai' ) );
+		}
 	}
 
 	/**
@@ -73,8 +160,11 @@ class Virastai_Acr_Admin {
 		$has_reset_action = isset( $_POST['virastai_acr_reset_progress'] ) ||
 							isset( $_POST['virastai_acr_reset_title'] ) ||
 							isset( $_POST['virastai_acr_reset_content'] ) ||
+							isset( $_POST['virastai_acr_reset_excerpt'] ) ||
 							isset( $_POST['virastai_acr_clear_sandbox_title'] ) ||
-							isset( $_POST['virastai_acr_clear_sandbox_content'] );
+							isset( $_POST['virastai_acr_clear_sandbox_content'] ) ||
+							isset( $_POST['virastai_acr_clear_sandbox_excerpt'] ) ||
+							isset( $_POST['virastai_acr_clear_logs'] );
 
 		if ( $has_reset_action ) {
 			if ( ! isset( $_POST['virastai_acr_reset_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['virastai_acr_reset_nonce'] ) ), 'virastai_acr_reset_action' ) ) {
@@ -87,11 +177,13 @@ class Virastai_Acr_Admin {
 			if ( isset( $_POST['virastai_acr_reset_progress'] ) ) {
 				$res1 = delete_metadata( 'post', 0, '_virastai_acr_content_generated', '', true );
 				$res2 = delete_metadata( 'post', 0, '_virastai_acr_title_generated', '', true );
-				$res3 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
-				$res4 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
+				$res3 = delete_metadata( 'post', 0, '_virastai_acr_excerpt_generated', '', true );
+				$res4 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
+				$res5 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
+				$res6 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true );
 
-				if ( $res1 || $res2 ) {
-					$message = __( 'Complete reset! Content and Title progress markers removed. Sandbox data cleared.', 'virastai-auto-content-rewrite-with-ai' );
+				if ( $res1 || $res2 || $res3 ) {
+					$message = __( 'Complete reset! Content, Title, and Excerpt progress markers removed. Sandbox data cleared.', 'virastai-auto-content-rewrite-with-ai' );
 				} else {
 					$message = __( 'No progress markers found to reset.', 'virastai-auto-content-rewrite-with-ai' );
 				}
@@ -133,6 +225,34 @@ class Virastai_Acr_Admin {
 				}
 			}
 
+			// Reset Excerpt Only.
+			if ( isset( $_POST['virastai_acr_reset_excerpt'] ) ) {
+				if ( delete_metadata( 'post', 0, '_virastai_acr_excerpt_generated', '', true ) ) {
+					$message = __( 'Excerpt progress reset! Excerpts are marked for re-processing.', 'virastai-auto-content-rewrite-with-ai' );
+				} else {
+					$message = __( 'No Excerpt progress markers found to reset.', 'virastai-auto-content-rewrite-with-ai' );
+				}
+			}
+
+			// Clear Sandbox Excerpt Only.
+			if ( isset( $_POST['virastai_acr_clear_sandbox_excerpt'] ) ) {
+				if ( delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true ) ) {
+					$message = __( 'Sandbox Excerpts cleared! The processing history was NOT reset.', 'virastai-auto-content-rewrite-with-ai' );
+				} else {
+					$message = __( 'No Sandbox Excerpts found to clear.', 'virastai-auto-content-rewrite-with-ai' );
+				}
+			}
+
+			// Clear Logs.
+			if ( isset( $_POST['virastai_acr_clear_logs'] ) ) {
+				if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+					Virastai_Acr_Logger::clear_logs();
+					$message = __( 'System logs cleared successfully.', 'virastai-auto-content-rewrite-with-ai' );
+				} else {
+					$message = __( 'Logger class is not available.', 'virastai-auto-content-rewrite-with-ai' );
+				}
+			}
+
 			if ( ! empty( $message ) ) {
 				add_settings_error( 'virastai_acr_messages', 'virastai_acr_reset_success', $message, 'success' );
 			}
@@ -160,6 +280,7 @@ class Virastai_Acr_Admin {
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_openrouter_api_key', 'sanitize_text_field' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_ai_model', 'sanitize_text_field' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_logging', 'absint' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_log_retention', 'absint' );
 
 		// Automation.
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_cron_enabled', 'absint' );
@@ -178,6 +299,9 @@ class Virastai_Acr_Admin {
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_preserve_images', 'absint' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_formatting', 'absint' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_prompt_template', 'sanitize_textarea_field' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_excerpt_rewrite', 'absint' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_excerpt_skip_incomplete', 'absint' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_excerpt_prompt_template', 'sanitize_textarea_field' );
 
 		// Title Options.
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_title_rewrite', 'absint' );
@@ -212,19 +336,6 @@ class Virastai_Acr_Admin {
 			)
 		);
 
-		add_settings_field(
-			'virastai_acr_enable_logging',
-			__( 'Enable Logging', 'virastai-auto-content-rewrite-with-ai' ),
-			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
-			'virastai-auto-content-rewrite-with-ai',
-			'virastai_acr_api_section',
-			array(
-				'label_for'   => 'virastai_acr_enable_logging',
-				'description' => __( 'Log external endpoint API errors and activities to the WordPress debug log.', 'virastai-auto-content-rewrite-with-ai' ),
-				'default'     => 0,
-			)
-		);
-
 		// --- Section: Base Context ---
 		add_settings_section( 'virastai_acr_base_prompt_section', __( 'Base Prompt (Context)', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
 		add_settings_field(
@@ -235,9 +346,9 @@ class Virastai_Acr_Admin {
 			'virastai_acr_base_prompt_section',
 			array(
 				'label_for'     => 'virastai_acr_base_prompt_template',
-				'default_value' => "Product: {product_title}\n\nContent: {post_content}",
-				/* translators: 1: placeholder for product title, 2: placeholder for post content */
-				'description'   => sprintf( __( 'This context is sent to the API endpoint for every request. Place your placeholders here: %1$s, %2$s', 'virastai-auto-content-rewrite-with-ai' ), '<code>{product_title}</code>', '<code>{post_content}</code>' ),
+				'default_value' => "Title: {post_title}\n\nContent: {post_content}",
+				/* translators: 1: placeholder for post title, 2: placeholder for post content */
+				'description'   => sprintf( __( 'This context is sent to the API endpoint for every request. Place your placeholders here: %1$s, %2$s', 'virastai-auto-content-rewrite-with-ai' ), '<code>{post_title}</code>', '<code>{post_content}</code>' ),
 			)
 		);
 
@@ -351,6 +462,43 @@ class Virastai_Acr_Admin {
 			)
 		);
 
+		add_settings_field(
+			'virastai_acr_enable_excerpt_rewrite',
+			__( 'Rewrite Excerpt / Short Description', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_content_section',
+			array(
+				'label_for'   => 'virastai_acr_enable_excerpt_rewrite',
+				'description' => __( 'Enable rewriting for regular post excerpts and WooCommerce product short descriptions.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_excerpt_skip_incomplete',
+			__( 'Do not process if current content is empty', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_content_section',
+			array(
+				'label_for'   => 'virastai_acr_excerpt_skip_incomplete',
+				'description' => __( 'Do not process excerpt if current post content is empty.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_excerpt_prompt_template',
+			__( 'Excerpt Instruction', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_textarea' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_content_section',
+			array(
+				'label_for'     => 'virastai_acr_excerpt_prompt_template',
+				'default_value' => 'Rewrite the short description or excerpt based on the context above.',
+				'description'   => __( 'Instructions for the API endpoint. This is appended to the Base Context.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
 		// --- Section: Title Options ---
 		add_settings_section( 'virastai_acr_title_section', __( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
 
@@ -369,13 +517,13 @@ class Virastai_Acr_Admin {
 
 		add_settings_field(
 			'virastai_acr_title_skip_incomplete',
-			__( 'Skip Incomplete Titles', 'virastai-auto-content-rewrite-with-ai' ),
+			__( 'Do not process if current content is empty', 'virastai-auto-content-rewrite-with-ai' ),
 			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
 			'virastai-auto-content-rewrite-with-ai',
 			'virastai_acr_title_section',
 			array(
 				'label_for'   => 'virastai_acr_title_skip_incomplete',
-				'description' => __( 'Do not process if current Title is empty.', 'virastai-auto-content-rewrite-with-ai' ),
+				'description' => __( 'Do not process title if current post content is empty.', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 
@@ -401,6 +549,37 @@ class Virastai_Acr_Admin {
 				'label_for'     => 'virastai_acr_title_prompt_template',
 				'default_value' => 'Generate a catchy product title based on the context above.',
 				'description'   => __( 'Instructions for the API endpoint. This is appended to the Base Context.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		// --- Section: System Logs ---
+		add_settings_section( 'virastai_acr_logs_section', __( 'Log Settings', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
+
+		add_settings_field(
+			'virastai_acr_enable_logging',
+			__( 'Enable System Logs', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_checkbox_toggle' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_logs_section',
+			array(
+				'label_for'   => 'virastai_acr_enable_logging',
+				'description' => __( 'Log all API requests, responses, errors, and system activity to a dedicated database table.', 'virastai-auto-content-rewrite-with-ai' ),
+				'default'     => 0,
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_log_retention',
+			__( 'Log Retention Period', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_number' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_logs_section',
+			array(
+				'label_for'     => 'virastai_acr_log_retention',
+				'default_value' => 7,
+				'description'   => __( 'Number of days to keep logs in the database. Set to 0 to keep logs indefinitely.', 'virastai-auto-content-rewrite-with-ai' ),
+				'min'           => 0,
+				'max'           => 365,
 			)
 		);
 	}
@@ -564,10 +743,13 @@ class Virastai_Acr_Admin {
 	 * Render number input.
 	 */
 	public function virastai_acr_render_field_number( $args ) {
-		$option = get_option( $args['label_for'], 5 );
-		$desc   = isset( $args['description'] ) ? $args['description'] : '';
+		$default = isset( $args['default_value'] ) ? $args['default_value'] : 5;
+		$option  = get_option( $args['label_for'], $default );
+		$desc    = isset( $args['description'] ) ? $args['description'] : '';
+		$min     = isset( $args['min'] ) ? $args['min'] : 1;
+		$max     = isset( $args['max'] ) ? $args['max'] : 50;
 		?>
-		<input type="number" id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="<?php echo esc_attr( $option ); ?>" class="small-text virastai-acr-input" min="1" max="50">
+		<input type="number" id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="<?php echo esc_attr( $option ); ?>" class="small-text virastai-acr-input" min="<?php echo esc_attr( $min ); ?>" <?php echo $max !== null ? 'max="' . esc_attr( $max ) . '"' : ''; ?>>
 		<?php if ( $desc ) : ?>
 			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
 		<?php endif; ?>
@@ -581,11 +763,18 @@ class Virastai_Acr_Admin {
 		$default = isset( $args['default_value'] ) ? $args['default_value'] : '';
 		$option  = get_option( $args['label_for'], $default );
 
-		if ( 'virastai_acr_base_prompt_template' === $args['label_for'] && empty( $option ) ) {
+		if ( empty( $option ) ) {
 			$option = $default;
 		}
 		?>
 		<textarea id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" rows="5" class="large-text code virastai-acr-textarea"><?php echo esc_textarea( $option ); ?></textarea>
+		<?php if ( ! empty( $default ) ) : ?>
+			<div class="virastai-acr-reset-wrapper">
+				<button type="button" class="virastai-acr-reset-btn" data-target="<?php echo esc_attr( $args['label_for'] ); ?>" data-default="<?php echo esc_attr( $default ); ?>">
+					<span class="dashicons dashicons-undo"></span> <?php esc_html_e( 'Reset to Default', 'virastai-auto-content-rewrite-with-ai' ); ?>
+				</button>
+			</div>
+		<?php endif; ?>
 		<?php if ( $desc = ( isset( $args['description'] ) ? $args['description'] : '' ) ) : ?>
 			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
 		<?php endif; ?>
@@ -605,18 +794,30 @@ class Virastai_Acr_Admin {
 			return $cached;
 		}
 
-		$response = wp_remote_get( 'https://openrouter.ai/api/v1/models' );
+		$url = 'https://openrouter.ai/api/v1/models';
+		if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+			Virastai_Acr_Logger::log( 'api_request', "GET request sent to: $url" );
+		}
+
+		$response = wp_remote_get( $url );
 
 		if ( is_wp_error( $response ) ) {
+			if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+				Virastai_Acr_Logger::log( 'error', 'Models API Error: ' . $response->get_error_message() );
+			}
 			return $this->virastai_acr_get_fallback_models();
 		}
 
 		$response_code = wp_remote_retrieve_response_code( $response );
+		$body          = wp_remote_retrieve_body( $response );
+
+		if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+			Virastai_Acr_Logger::log( 'api_response', "Response code: $response_code\nBody: " . $body );
+		}
+
 		if ( 200 !== $response_code ) {
 			return $this->virastai_acr_get_fallback_models();
 		}
-
-		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
 		if ( ! isset( $data['data'] ) || ! is_array( $data['data'] ) ) {
@@ -669,7 +870,7 @@ class Virastai_Acr_Admin {
 		$section = $wp_settings_sections[ $page ][ $section_id ];
 
 		if ( $section['title'] ) {
-			echo "<h2>{$section['title']}</h2>\n";
+			echo '<h2>' . esc_html( $section['title'] ) . "</h2>\n";
 		}
 
 		if ( $section['callback'] ) {
@@ -712,6 +913,7 @@ class Virastai_Acr_Admin {
 								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation & Targeting', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-content" class="nav-tab" data-tab="content"><?php esc_html_e( 'Content Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-title" class="nav-tab" data-tab="title"><?php esc_html_e( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-logs" class="nav-tab" data-tab="logs"><?php esc_html_e( 'System Logs', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 							</h2>
 
 							<!-- Tab Contents -->
@@ -721,6 +923,26 @@ class Virastai_Acr_Admin {
 
 							<div id="tab-automation" class="virastai-acr-tab-content">
 								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_automation_section' ); ?>
+								
+								<div class="virastai-acr-automation-actions" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+									<h3 style="margin-bottom: 10px; color: #111827; font-size: 16px; font-weight: 600;"><?php esc_html_e( 'Reset Progress Actions', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+									<p class="description" style="margin-bottom: 15px;"><?php esc_html_e( 'Clear completion markers to re-run rewriting processes on posts that have already been processed.', 'virastai-auto-content-rewrite-with-ai' ); ?></p>
+									
+									<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-danger" id="virastai-acr-tab-reset-all-btn">
+											<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Reset ALL Progress', 'virastai-auto-content-rewrite-with-ai' ); ?>
+										</button>
+										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-title-btn">
+											<span class="dashicons dashicons-heading"></span> <?php esc_html_e( 'Reset Titles', 'virastai-auto-content-rewrite-with-ai' ); ?>
+										</button>
+										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-content-btn">
+											<span class="dashicons dashicons-editor-justify"></span> <?php esc_html_e( 'Reset Content', 'virastai-auto-content-rewrite-with-ai' ); ?>
+										</button>
+										<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-tab-reset-excerpt-btn">
+											<span class="dashicons dashicons-editor-alignleft"></span> <?php esc_html_e( 'Reset Excerpts', 'virastai-auto-content-rewrite-with-ai' ); ?>
+										</button>
+									</div>
+								</div>
 							</div>
 
 							<div id="tab-content" class="virastai-acr-tab-content">
@@ -732,9 +954,78 @@ class Virastai_Acr_Admin {
 								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_title_section' ); ?>
 							</div>
 
-							<div class="virastai-acr-footer-actions">
-								<?php submit_button( __( 'Save Settings', 'virastai-auto-content-rewrite-with-ai' ), 'primary large', 'submit', false ); ?>
+							<div id="tab-logs" class="virastai-acr-tab-content">
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_logs_section' ); ?>
+
+								<div class="virastai-acr-logs-viewer-container">
+									<div class="virastai-acr-logs-header">
+										<h3><?php esc_html_e( 'Recent System Logs', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+										<div class="virastai-acr-logs-actions" style="display: flex; gap: 8px; align-items: center;">
+											<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-refresh-logs-btn">
+												<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Refresh Logs', 'virastai-auto-content-rewrite-with-ai' ); ?>
+											</button>
+											<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-secondary" id="virastai-acr-copy-logs-btn">
+												<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Copy Logs', 'virastai-auto-content-rewrite-with-ai' ); ?>
+											</button>
+											<button type="button" class="virastai-acr-btn-2026 virastai-acr-btn-2026-danger" id="virastai-acr-clear-logs-btn">
+												<span class="dashicons dashicons-trash"></span> <?php esc_html_e( 'Clear Logs', 'virastai-auto-content-rewrite-with-ai' ); ?>
+											</button>
+										</div>
+									</div>
+									<div class="virastai-acr-logs-body">
+										<div class="virastai-acr-table-wrapper">
+											<table class="virastai-acr-logs-table">
+												<thead>
+													<tr>
+														<th class="col-date"><?php esc_html_e( 'Date/Time', 'virastai-auto-content-rewrite-with-ai' ); ?></th>
+														<th class="col-type"><?php esc_html_e( 'Type', 'virastai-auto-content-rewrite-with-ai' ); ?></th>
+														<th class="col-message"><?php esc_html_e( 'Message', 'virastai-auto-content-rewrite-with-ai' ); ?></th>
+														<th class="col-actions"><?php esc_html_e( 'Actions', 'virastai-auto-content-rewrite-with-ai' ); ?></th>
+													</tr>
+												</thead>
+												<tbody id="virastai-acr-logs-rows">
+													<!-- Rows loaded via AJAX -->
+												</tbody>
+											</table>
+										</div>
+										<div id="virastai-acr-logs-pagination" class="virastai-acr-pagination-container">
+											<!-- Pagination loaded via AJAX -->
+										</div>
+										<!-- Hidden element to keep raw logs for copy logs functionality -->
+										<textarea id="virastai-acr-logs-raw-content" style="display: none;"><?php
+											if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+												echo esc_html( Virastai_Acr_Logger::get_logs_formatted() );
+											}
+										?></textarea>
+									</div>
+								</div>
 							</div>
+
+							<div class="virastai-acr-footer-actions">
+								<button type="submit" name="submit" id="submit" class="virastai-acr-btn-2026 virastai-acr-btn-2026-primary">
+									<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save Settings', 'virastai-auto-content-rewrite-with-ai' ); ?>
+								</button>
+							</div>
+						</form>
+						<form method="post" id="virastai-acr-form-clear-logs" style="display: none;">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<input type="hidden" name="virastai_acr_clear_logs" value="1">
+						</form>
+						<form method="post" id="virastai-acr-form-reset-all" style="display: none;">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<input type="hidden" name="virastai_acr_reset_progress" value="1">
+						</form>
+						<form method="post" id="virastai-acr-form-reset-title" style="display: none;">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<input type="hidden" name="virastai_acr_reset_title" value="1">
+						</form>
+						<form method="post" id="virastai-acr-form-reset-content" style="display: none;">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<input type="hidden" name="virastai_acr_reset_content" value="1">
+						</form>
+						<form method="post" id="virastai-acr-form-reset-excerpt" style="display: none;">
+							<?php wp_nonce_field( 'virastai_acr_reset_action', 'virastai_acr_reset_nonce' ); ?>
+							<input type="hidden" name="virastai_acr_reset_excerpt" value="1">
 						</form>
 					</div>
 				</div>

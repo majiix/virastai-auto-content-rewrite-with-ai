@@ -117,8 +117,9 @@ class Virastai_Acr_Cron {
 		// Check what features are enabled.
 		$enable_title   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
 		$enable_content = get_option( 'virastai_acr_enable_content_rewrite', 1 );
+		$enable_excerpt = get_option( 'virastai_acr_enable_excerpt_rewrite', 0 );
 
-		if ( ! $enable_title && ! $enable_content ) {
+		if ( ! $enable_title && ! $enable_content && ! $enable_excerpt ) {
 			return; // Nothing to do.
 		}
 
@@ -147,13 +148,19 @@ class Virastai_Acr_Cron {
 			);
 		}
 
-		// We order by ID ascending to avoid the heavy performance cost of orderby => rand.
+		if ( $enable_excerpt ) {
+			$meta_query[] = array(
+				'key'     => '_virastai_acr_excerpt_generated',
+				'compare' => 'NOT EXISTS',
+			);
+		}
+
+		// We order randomly to prevent getting stuck on empty content.
 		$args = array(
 			'post_type'      => $allowed_post_types,
 			'post_status'    => $allowed_post_statuses,
 			'posts_per_page' => $batch_size,
-			'orderby'        => 'ID',
-			'order'          => 'ASC',
+			'orderby'        => 'rand',
 			'meta_query'     => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		);
 

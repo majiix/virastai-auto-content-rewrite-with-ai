@@ -10,18 +10,16 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-// 1. Clear Scheduled Cron Event.
-$virastai_timestamp = wp_next_scheduled( 'virastai_acr_process_content_event' );
-if ( $virastai_timestamp ) {
-	wp_unschedule_event( $virastai_timestamp, 'virastai_acr_process_content_event' );
-}
+// 1. Clear Scheduled Cron Events.
 wp_clear_scheduled_hook( 'virastai_acr_process_content_event' );
+wp_clear_scheduled_hook( 'virastai_acr_daily_cleanup_event' );
 
 // 2. Delete Plugin Options.
 $virastai_options_to_delete = array(
 	'virastai_acr_openrouter_api_key',
 	'virastai_acr_ai_model',
 	'virastai_acr_enable_logging',
+	'virastai_acr_log_retention',
 	'virastai_acr_cron_enabled',
 	'virastai_acr_cron_interval',
 	'virastai_acr_cron_batch_size',
@@ -33,6 +31,9 @@ $virastai_options_to_delete = array(
 	'virastai_acr_preserve_images',
 	'virastai_acr_enable_formatting',
 	'virastai_acr_prompt_template',
+	'virastai_acr_enable_excerpt_rewrite',
+	'virastai_acr_excerpt_skip_incomplete',
+	'virastai_acr_excerpt_prompt_template',
 	'virastai_acr_enable_title_rewrite',
 	'virastai_acr_title_skip_incomplete',
 	'virastai_acr_remove_title_html',
@@ -47,8 +48,16 @@ foreach ( $virastai_options_to_delete as $virastai_option_name ) {
 // 3. Delete Post Meta Data.
 delete_metadata( 'post', 0, '_virastai_acr_content_generated', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_title_generated', '', true );
+delete_metadata( 'post', 0, '_virastai_acr_excerpt_generated', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
+delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true );
 
 // 4. Delete Model Cache Transient.
 delete_transient( 'virastai_acr_models_cache' );
+
+// 5. Drop Database Table.
+global $wpdb;
+$virastai_table_name = esc_sql( $wpdb->prefix . 'virastai_acr_logs' );
+// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
+$wpdb->query( "DROP TABLE IF EXISTS $virastai_table_name" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared

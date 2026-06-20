@@ -23,15 +23,17 @@ class Virastai_Acr_Rewriter {
 	 * @param WP_Post $post       Post object.
 	 * @return bool True if at least one update occurred, false otherwise.
 	 */
-	public function virastai_acr_generate_content( $product_id, $post ) {
+	public function virastai_acr_generate_content( $product_id, $post, $target_type = '' ) {
 		// --- 1. Load Settings ---
-		$enable_title_rewrite   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
-		$enable_content_rewrite = get_option( 'virastai_acr_enable_content_rewrite', 1 );
-		$sandbox_mode_enabled   = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
+		$enable_title_rewrite     = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content_rewrite   = get_option( 'virastai_acr_enable_content_rewrite', 1 );
+		$enable_excerpt_rewrite   = get_option( 'virastai_acr_enable_excerpt_rewrite', 0 );
+		$sandbox_mode_enabled     = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
 
 		// Skip settings.
 		$skip_incomplete_title   = get_option( 'virastai_acr_title_skip_incomplete', 1 );
 		$skip_incomplete_content = get_option( 'virastai_acr_content_skip_incomplete', 1 );
+		$skip_incomplete_excerpt = get_option( 'virastai_acr_excerpt_skip_incomplete', 1 );
 
 		// Formatting settings.
 		$preserve_images   = get_option( 'virastai_acr_preserve_images', 1 );
@@ -39,16 +41,18 @@ class Virastai_Acr_Rewriter {
 		$remove_title_html = get_option( 'virastai_acr_remove_title_html', 1 );
 
 		// Prompts.
-		$base_prompt_tpl     = get_option( 'virastai_acr_base_prompt_template', "Product: {product_title}\n\nContent: {post_content}" );
+		$base_prompt_tpl     = get_option( 'virastai_acr_base_prompt_template', "Title: {post_title}\n\nContent: {post_content}" );
 		$title_prompt_inst   = get_option( 'virastai_acr_title_prompt_template', 'Generate a catchy product title based on the context above.' );
 		$content_prompt_inst = get_option( 'virastai_acr_prompt_template', 'Rewrite the content based on the context above.' );
+		$excerpt_prompt_inst = get_option( 'virastai_acr_excerpt_prompt_template', 'Rewrite the short description or excerpt based on the context above.' );
 
 		$current_title   = get_the_title( $product_id );
 		$current_content = $post->post_content;
+		$current_excerpt = $post->post_excerpt;
 
 		// Prepare Base Context.
 		$base_context = str_replace(
-			array( '{product_title}', '{post_content}' ),
+			array( '{post_title}', '{post_content}' ),
 			array( $current_title, $current_content ),
 			$base_prompt_tpl
 		);
@@ -59,14 +63,32 @@ class Virastai_Acr_Rewriter {
 		// --- 2. Determine what needs processing ---
 		$title_already_done   = get_post_meta( $product_id, '_virastai_acr_title_generated', true );
 		$content_already_done = get_post_meta( $product_id, '_virastai_acr_content_generated', true );
+		$excerpt_already_done = get_post_meta( $product_id, '_virastai_acr_excerpt_generated', true );
 
-		$process_title   = $enable_title_rewrite && ! $title_already_done;
-		$process_content = $enable_content_rewrite && ! $content_already_done;
+		$process_title   = false;
+		$process_content = false;
+		$process_excerpt = false;
+
+		if ( empty( $target_type ) || 'all' === $target_type ) {
+			$process_title   = $enable_title_rewrite && ! $title_already_done;
+			$process_content = $enable_content_rewrite && ! $content_already_done;
+			$process_excerpt = $enable_excerpt_rewrite && ! $excerpt_already_done;
+		} else {
+			if ( 'title' === $target_type && $enable_title_rewrite ) {
+				$process_title = true;
+			}
+			if ( 'content' === $target_type && $enable_content_rewrite ) {
+				$process_content = true;
+			}
+			if ( 'excerpt' === $target_type && $enable_excerpt_rewrite ) {
+				$process_excerpt = true;
+			}
+		}
 
 		// Validation for Title.
-		if ( $process_title && $skip_incomplete_title && empty( trim( $current_title ) ) ) {
+		if ( $process_title && $skip_incomplete_title && empty( trim( $current_content ) ) ) {
 			$process_title = false;
-			$this->log( "Skipping Title for ID $product_id: Title is empty." );
+			$this->log( "Skipping Title for ID $product_id: Content is empty." );
 		}
 
 		// Validation for Content.
@@ -75,24 +97,46 @@ class Virastai_Acr_Rewriter {
 			$this->log( "Skipping Content for ID $product_id: Content is empty." );
 		}
 
-		// --- 3. Combined JSON Path (Single API Call) ---
-		if ( $process_title && $process_content ) {
+		// Validation for Excerpt.
+		if ( $process_excerpt && $skip_incomplete_excerpt && empty( trim( $current_content ) ) ) {
+			$process_excerpt = false;
+			$this->log( "Skipping Excerpt for ID $product_id: Content is empty." );
+		}
 
-			// Prepare images for re-insertion later.
-			$existing_images = '';
-			if ( $preserve_images ) {
-				preg_match_all( '/<img[^>]+>/i', $current_content, $images );
-				$existing_images = isset( $images[0] ) ? implode( "\n", $images[0] ) : '';
-			}
+		$process_count = ( $process_title ? 1 : 0 ) + ( $process_content ? 1 : 0 ) + ( $process_excerpt ? 1 : 0 );
+		if ( 0 === $process_count ) {
+			return false;
+		}
 
+		// Prepare images for re-insertion later.
+		$existing_images = '';
+		if ( $preserve_images ) {
+			preg_match_all( '/<img[^>]+>/i', $current_content, $images );
+			$existing_images = isset( $images[0] ) ? implode( "\n", $images[0] ) : '';
+		}
+
+		// --- 3. Combined JSON Path (Single API Call for multiple fields) ---
+		if ( $process_count > 1 ) {
 			// Construct Combined Prompt.
 			$instructions  = "Instructions:\n";
-			$instructions .= "1. Title Task: " . $title_prompt_inst . "\n";
-			$instructions .= "2. Content Task: " . $content_prompt_inst . "\n";
-			$instructions .= "\nIMPORTANT: You MUST return the result as a valid JSON object with exactly two keys: 'title' and 'content'.";
+			$required_keys = array();
 
-			$full_prompt = $base_context . "\n\n---\n\n" . $instructions;
+			if ( $process_title ) {
+				$instructions   .= "1. Title Task: " . $title_prompt_inst . "\n";
+				$required_keys[] = "'title'";
+			}
+			if ( $process_content ) {
+				$instructions   .= "2. Content Task: " . $content_prompt_inst . "\n";
+				$required_keys[] = "'content'";
+			}
+			if ( $process_excerpt ) {
+				$instructions   .= "3. Excerpt Task: " . $excerpt_prompt_inst . "\n";
+				$required_keys[] = "'excerpt'";
+			}
 
+			$instructions .= "\nIMPORTANT: You MUST return the result as a valid JSON object with exactly these keys: " . implode( ', ', $required_keys ) . ". Output ONLY the raw JSON object. Do NOT include any introductory text, thinking blocks, conversational filler, or explanations in the response.";
+
+			$full_prompt   = $base_context . "\n\n---\n\n" . $instructions;
 			$response_text = $this->virastai_acr_call_api( $full_prompt, true );
 
 			if ( $response_text ) {
@@ -100,44 +144,63 @@ class Virastai_Acr_Rewriter {
 				$cleaned_response = preg_replace( '/^```json\s*|\s*```$/s', '', $response_text );
 				$json_data        = json_decode( $cleaned_response, true );
 
-				if ( json_last_error() === JSON_ERROR_NONE && isset( $json_data['title'], $json_data['content'] ) ) {
-
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_data ) ) {
 					// Handle Title.
-					$new_title = $json_data['title'];
-					if ( $remove_title_html ) {
-						// Strip HTML tags.
-						$new_title = wp_strip_all_tags( $new_title );
-						// Strip Markdown syntax (headers, bold, italics, code blocks, etc).
-						$new_title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $new_title );
-					}
-					$new_title = trim( $new_title, '"\'' );
+					if ( $process_title && isset( $json_data['title'] ) ) {
+						$new_title = $json_data['title'];
+						if ( $remove_title_html ) {
+							$new_title = wp_strip_all_tags( $new_title );
+							$new_title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $new_title );
+						}
+						$new_title = trim( $new_title, "\"' \t\n\r" );
 
-					if ( $sandbox_mode_enabled ) {
-						update_post_meta( $product_id, '_virastai_acr_sandbox_title', $new_title );
-					} else {
-						$update_args['post_title'] = $new_title;
+						if ( $sandbox_mode_enabled ) {
+							update_post_meta( $product_id, '_virastai_acr_sandbox_title', $new_title );
+						} else {
+							$update_args['post_title'] = $new_title;
+						}
+						update_post_meta( $product_id, '_virastai_acr_title_generated', '1' );
+						$has_changes = true;
+						$this->log( "Generated Title for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
 					}
-					update_post_meta( $product_id, '_virastai_acr_title_generated', '1' );
 
 					// Handle Content.
-					$new_content = $json_data['content'];
-					if ( $enable_formatting ) {
-						$new_content = $this->virastai_acr_apply_formatting( $new_content );
-					}
-					// Append images.
-					if ( $preserve_images && ! empty( $existing_images ) ) {
-						$new_content = $new_content . "\n\n" . $existing_images;
+					if ( $process_content && isset( $json_data['content'] ) ) {
+						$new_content = $json_data['content'];
+						if ( $enable_formatting ) {
+							$new_content = $this->virastai_acr_apply_formatting( $new_content );
+						}
+						// Append images.
+						if ( $preserve_images && ! empty( $existing_images ) ) {
+							$new_content = $new_content . "\n\n" . $existing_images;
+						}
+
+						if ( $sandbox_mode_enabled ) {
+							update_post_meta( $product_id, '_virastai_acr_sandbox_content', $new_content );
+						} else {
+							$update_args['post_content'] = $new_content;
+						}
+						update_post_meta( $product_id, '_virastai_acr_content_generated', '2' );
+						$has_changes = true;
+						$this->log( "Generated Content for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
 					}
 
-					if ( $sandbox_mode_enabled ) {
-						update_post_meta( $product_id, '_virastai_acr_sandbox_content', $new_content );
-					} else {
-						$update_args['post_content'] = $new_content;
-					}
-					update_post_meta( $product_id, '_virastai_acr_content_generated', '2' );
+					// Handle Excerpt.
+					if ( $process_excerpt && isset( $json_data['excerpt'] ) ) {
+						$new_excerpt = $json_data['excerpt'];
+						if ( $enable_formatting ) {
+							$new_excerpt = $this->virastai_acr_apply_formatting( $new_excerpt );
+						}
 
-					$has_changes = true;
-					$this->log( "Generated Title AND Content (JSON) for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
+						if ( $sandbox_mode_enabled ) {
+							update_post_meta( $product_id, '_virastai_acr_sandbox_excerpt', $new_excerpt );
+						} else {
+							$update_args['post_excerpt'] = $new_excerpt;
+						}
+						update_post_meta( $product_id, '_virastai_acr_excerpt_generated', '3' );
+						$has_changes = true;
+						$this->log( "Generated Excerpt for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
+					}
 
 				} else {
 					$this->log( "JSON Decode Error for ID $product_id. Response snippet: " . substr( $response_text, 0, 150 ) );
@@ -148,17 +211,15 @@ class Virastai_Acr_Rewriter {
 
 			// Title Only Path.
 			if ( $process_title && ! empty( $title_prompt_inst ) ) {
-				$full_prompt = $base_context . "\n\n---\n\n" . $title_prompt_inst;
+				$full_prompt = $base_context . "\n\n---\n\n" . $title_prompt_inst . "\n\nIMPORTANT: Output ONLY the catchy title text. Do NOT wrap the title in quotes, introductory text, explanations, or thinking blocks. Output nothing else.";
 				$new_title   = $this->virastai_acr_call_api( $full_prompt, false );
 
 				if ( $new_title ) {
 					if ( $remove_title_html ) {
-						// Strip HTML tags.
 						$new_title = wp_strip_all_tags( $new_title );
-						// Strip Markdown syntax (headers, bold, italics, code blocks, etc).
 						$new_title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $new_title );
 					}
-					$new_title = trim( $new_title, '"\'' );
+					$new_title = trim( $new_title, "\"' \t\n\r" );
 
 					if ( $sandbox_mode_enabled ) {
 						update_post_meta( $product_id, '_virastai_acr_sandbox_title', $new_title );
@@ -174,13 +235,7 @@ class Virastai_Acr_Rewriter {
 
 			// Content Only Path.
 			if ( $process_content && ! empty( $content_prompt_inst ) ) {
-				$existing_images = '';
-				if ( $preserve_images ) {
-					preg_match_all( '/<img[^>]+>/i', $current_content, $images );
-					$existing_images = isset( $images[0] ) ? implode( "\n", $images[0] ) : '';
-				}
-
-				$full_prompt = $base_context . "\n\n---\n\n" . $content_prompt_inst;
+				$full_prompt = $base_context . "\n\n---\n\n" . $content_prompt_inst . "\n\nIMPORTANT: Output ONLY the rewritten content text. Do NOT include introductory text, explanations, or thinking blocks. Output nothing else.";
 				$new_content = $this->virastai_acr_call_api( $full_prompt, false );
 
 				if ( $new_content ) {
@@ -203,6 +258,28 @@ class Virastai_Acr_Rewriter {
 					$this->log( "Generated Content for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
 				}
 			}
+
+			// Excerpt Only Path.
+			if ( $process_excerpt && ! empty( $excerpt_prompt_inst ) ) {
+				$full_prompt = $base_context . "\n\n---\n\n" . $excerpt_prompt_inst . "\n\nIMPORTANT: Output ONLY the rewritten excerpt text. Do NOT include introductory text, explanations, or thinking blocks. Output nothing else.";
+				$new_excerpt = $this->virastai_acr_call_api( $full_prompt, false );
+
+				if ( $new_excerpt ) {
+					if ( $enable_formatting ) {
+						$new_excerpt = $this->virastai_acr_apply_formatting( $new_excerpt );
+					}
+
+					if ( $sandbox_mode_enabled ) {
+						update_post_meta( $product_id, '_virastai_acr_sandbox_excerpt', $new_excerpt );
+					} else {
+						$update_args['post_excerpt'] = $new_excerpt;
+					}
+					$has_changes = true;
+
+					update_post_meta( $product_id, '_virastai_acr_excerpt_generated', '3' );
+					$this->log( "Generated Excerpt for ID $product_id" . ( $sandbox_mode_enabled ? ' [SANDBOX]' : '' ) );
+				}
+			}
 		}
 
 		// --- 5. Final Update ---
@@ -211,7 +288,7 @@ class Virastai_Acr_Rewriter {
 				$result = wp_update_post( $update_args );
 
 				if ( is_wp_error( $result ) ) {
-					$this->log( "Error updating post $product_id: " . $result->get_error_message() );
+					$this->log( "Error updating post $product_id: " . $result->get_error_message(), 'error' );
 					return false;
 				}
 			}
@@ -262,12 +339,12 @@ class Virastai_Acr_Rewriter {
 		$api_key = trim( $api_key );
 
 		if ( empty( $api_key ) ) {
-			$this->log( 'API Key is missing.' );
+			$this->log( 'API Key is missing.', 'error' );
 			return false;
 		}
 
 		if ( empty( self::API_ENDPOINT ) ) {
-			$this->log( 'CRITICAL: API Endpoint Constant is empty.' );
+			$this->log( 'CRITICAL: API Endpoint Constant is empty.', 'error' );
 			return false;
 		}
 
@@ -285,30 +362,49 @@ class Virastai_Acr_Rewriter {
 			$request_body['response_format'] = array( 'type' => 'json_object' );
 		}
 
-		$response = wp_remote_post(
-			self::API_ENDPOINT,
-			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_key,
-					'HTTP-Referer'  => get_site_url(),
-					'X-Title'       => 'Virastai Auto Content Rewrite With AI',
-				),
-				'body'    => wp_json_encode( $request_body ),
-				'timeout' => 45,
-			)
+		$headers = array(
+			'Content-Type'  => 'application/json',
+			'Authorization' => 'Bearer ' . $api_key,
+			'HTTP-Referer'  => get_site_url(),
+			'X-Title'       => 'Virastai Auto Content Rewrite With AI',
+		);
+		$request_args = array(
+			'headers' => $headers,
+			'body'    => wp_json_encode( $request_body ),
+			'timeout' => 45,
 		);
 
+		$this->log(
+			sprintf(
+				"POST request sent to: %s\nHeaders: %s\nBody: %s",
+				self::API_ENDPOINT,
+				wp_json_encode( $headers ),
+				$request_args['body']
+			),
+			'api_request'
+		);
+
+		$response = wp_remote_post( self::API_ENDPOINT, $request_args );
+
 		if ( is_wp_error( $response ) ) {
-			$this->log( 'API Error: ' . $response->get_error_message() );
+			$this->log( 'API Error: ' . $response->get_error_message(), 'error' );
 			return false;
 		}
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$response_body = wp_remote_retrieve_body( $response );
 
+		$this->log(
+			sprintf(
+				"Response code: %d\nBody: %s",
+				$response_code,
+				$response_body
+			),
+			'api_response'
+		);
+
 		if ( 200 !== $response_code ) {
-			$this->log( "API returned $response_code - $response_body" );
+			$this->log( "API returned $response_code - $response_body", 'error' );
 			return false;
 		}
 
@@ -325,12 +421,11 @@ class Virastai_Acr_Rewriter {
 	 * Logging Utility.
 	 *
 	 * @param string $message The message to log.
+	 * @param string $type    The type of log.
 	 */
-	private function log( $message ) {
-		$logging_enabled = get_option( 'virastai_acr_enable_logging', 0 );
-		if ( $logging_enabled ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Log error for debugging purposes.
-			error_log( '[VirastaiACR] ' . $message );
+	private function log( $message, $type = 'info' ) {
+		if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+			Virastai_Acr_Logger::log( $type, $message );
 		}
 	}
 }
