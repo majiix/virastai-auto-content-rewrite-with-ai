@@ -147,3 +147,9 @@ step 29:
 step 30:
 1- Prefixed the global `$delete_data` variable in uninstall.php to `$virastai_acr_delete_data` to conform with global variable prefix standards.
 2- Added translators comment and output escaping using `wp_kses_post` on the OpenRouter signup text link in the help tab.
+
+step 31:
+1- Removed unused utility classes from assets/css/admin.css to clear stylesheet bloat.
+2- Refactored duplicated title cleaning and tags stripping logic in class-virastai-acr-rewriter.php into a private helper function.
+3- Enhanced combined prompt generation by dynamically assigning sequential numbers to task instructions.
+4- Fixed outdated placeholder reference in readme.txt FAQ to use post_title.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Virastai Auto Content Rewrite With AI
  * Plugin URI:  https://wordpress.org/plugins/virastai-auto-content-rewrite-with-ai
- * Description: Connects to OpenRouter (Large Language Models) to rewrite or translate WooCommerce product content automatically.
+ * Description: Connects to AI to automatically rewrite, translate, or optimize your Wordpress posts, pages and all post types in the background or manually.
  * Version:     1.5.0
  * Author:      micromax
  * Text Domain: virastai-auto-content-rewrite-with-ai

@@ -1,19 +1,19 @@
 === Virastai Auto Content Rewrite With AI ===
 Contributors: micromax2
-Tags: content rewriter, woocommerce, openrouter, automation, llm
+Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.0
 Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Connects to OpenRouter to automatically rewrite, translate, or optimize your WooCommerce products and post content in the background.
+Connects to AI to automatically rewrite, translate, or optimize your Wordpress posts, pages and all post types in the background or manually.
 
 == Description ==
 
 Virastai Auto Content Rewrite With AI is a powerful automation tool designed to refresh your WordPress site's content using state-of-the-art Large Language Models. By connecting to the OpenRouter API, this plugin allows you to leverage models to bulk-rewrite titles and body content for your WooCommerce products, blog posts, or pages.
 
-Everything runs silently in the background using WordPress Cron, ensuring your server is never overloaded.
+Everything runs silently in the background using WordPress Cron, ensuring your server is never overloaded or you can manually.
 
 Key Features:
 
@@ -83,12 +83,7 @@ Yes! If you enable "Preserve Images" in the settings, the plugin extracts all <i
 
 = Can I customize the instructions? =
 
-Absolutely. You can set a "Base Context" (sent with every request) and specific instructions for both Titles and Body content. Placeholders like `{product_title}` and `{post_content}` are available.
-
-== Screenshots ==
-
-1. Main Settings: Configure API keys, prompts, and automation intervals.
-2. Statistics Sidebar: Monitor the progress of your content rewriting batches.
+Absolutely. You can set a "Base Context" (sent with every request) and specific instructions for both Titles and Body content. Placeholders like `{post_title}` and `{post_content}` are available.
 
 == Changelog ==
 

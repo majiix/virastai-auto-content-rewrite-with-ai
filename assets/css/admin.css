@@ -360,32 +360,7 @@ input:checked + .virastai-acr-slider:before {
     margin-top: 5px;
 }
 
-/* Utility Classes */
-.virastai-acr-mt-20 {
-    margin-top: 20px;
-}
 
-.virastai-acr-mb-10 {
-    margin-bottom: 10px;
-}
-
-.virastai-acr-mb-15 {
-    margin-bottom: 15px;
-}
-
-.virastai-acr-full-width {
-    width: 100%;
-}
-
-.virastai-acr-flex-row {
-    display: flex;
-    gap: 5px;
-    flex-direction: column;
-}
-
-.virastai-acr-flex-item {
-    flex: 1;
-}
 
 /* Responsive adjustments */
 @media (max-width: 960px) {

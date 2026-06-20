@@ -120,18 +120,22 @@ class Virastai_Acr_Rewriter {
 			// Construct Combined Prompt.
 			$instructions  = "Instructions:\n";
 			$required_keys = array();
+			$idx           = 1;
 
 			if ( $process_title ) {
-				$instructions   .= "1. Title Task: " . $title_prompt_inst . "\n";
+				$instructions   .= $idx . ". Title Task: " . $title_prompt_inst . "\n";
 				$required_keys[] = "'title'";
+				$idx++;
 			}
 			if ( $process_content ) {
-				$instructions   .= "2. Content Task: " . $content_prompt_inst . "\n";
+				$instructions   .= $idx . ". Content Task: " . $content_prompt_inst . "\n";
 				$required_keys[] = "'content'";
+				$idx++;
 			}
 			if ( $process_excerpt ) {
-				$instructions   .= "3. Excerpt Task: " . $excerpt_prompt_inst . "\n";
+				$instructions   .= $idx . ". Excerpt Task: " . $excerpt_prompt_inst . "\n";
 				$required_keys[] = "'excerpt'";
+				$idx++;
 			}
 
 			$instructions .= "\nIMPORTANT: You MUST return the result as a valid JSON object with exactly these keys: " . implode( ', ', $required_keys ) . ". Output ONLY the raw JSON object. Do NOT include any introductory text, thinking blocks, conversational filler, or explanations in the response.";
@@ -147,12 +151,7 @@ class Virastai_Acr_Rewriter {
 				if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_data ) ) {
 					// Handle Title.
 					if ( $process_title && isset( $json_data['title'] ) ) {
-						$new_title = $json_data['title'];
-						if ( $remove_title_html ) {
-							$new_title = wp_strip_all_tags( $new_title );
-							$new_title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $new_title );
-						}
-						$new_title = trim( $new_title, "\"' \t\n\r" );
+						$new_title = $this->virastai_acr_clean_title( $json_data['title'], $remove_title_html );
 
 						if ( $sandbox_mode_enabled ) {
 							update_post_meta( $product_id, '_virastai_acr_sandbox_title', $new_title );
@@ -215,11 +214,7 @@ class Virastai_Acr_Rewriter {
 				$new_title   = $this->virastai_acr_call_api( $full_prompt, false );
 
 				if ( $new_title ) {
-					if ( $remove_title_html ) {
-						$new_title = wp_strip_all_tags( $new_title );
-						$new_title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $new_title );
-					}
-					$new_title = trim( $new_title, "\"' \t\n\r" );
+					$new_title = $this->virastai_acr_clean_title( $new_title, $remove_title_html );
 
 					if ( $sandbox_mode_enabled ) {
 						update_post_meta( $product_id, '_virastai_acr_sandbox_title', $new_title );
@@ -296,6 +291,21 @@ class Virastai_Acr_Rewriter {
 		}
 
 		return $has_changes; // Return true if sandbox meta was updated.
+	}
+
+	/**
+	 * Clean generated title by stripping HTML and markdown indicators.
+	 *
+	 * @param string $title       Raw generated title text.
+	 * @param bool   $remove_html Whether to strip tags and format indicators.
+	 * @return string Cleaned title text.
+	 */
+	private function virastai_acr_clean_title( $title, $remove_html ) {
+		if ( $remove_html ) {
+			$title = wp_strip_all_tags( $title );
+			$title = preg_replace( '/([#*`_~\[\]\(\)])/', '', $title );
+		}
+		return trim( $title, "\"' \t\n\r" );
 	}
 
 	/**
