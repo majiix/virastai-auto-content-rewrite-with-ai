@@ -72,8 +72,8 @@ class Virastai_Acr_Cron {
 	 * Validates and reconciles the schedule based on saved settings.
 	 */
 	public function virastai_acr_manage_schedule() {
-		$enabled    = (bool) Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_cron_enabled', 'jixcrai_cron_enabled', 0 );
-		$recurrence = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_cron_interval', 'jixcrai_cron_interval', 'hourly' );
+		$enabled    = (bool) get_option( 'virastai_acr_cron_enabled', 0 );
+		$recurrence = get_option( 'virastai_acr_cron_interval', 'hourly' );
 
 		$allowed_intervals = array( '1min', '5min', '15min', '30min', 'hourly', 'twicedaily', 'daily' );
 		if ( ! in_array( $recurrence, $allowed_intervals, true ) ) {
@@ -105,18 +105,18 @@ class Virastai_Acr_Cron {
 	 * Processes a batch of products/posts.
 	 */
 	public function virastai_acr_run_batch_process() {
-		$enabled = (bool) Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_cron_enabled', 'jixcrai_cron_enabled', 0 );
+		$enabled = (bool) get_option( 'virastai_acr_cron_enabled', 0 );
 		if ( ! $enabled ) {
 			return;
 		}
 
-		$allowed_post_types    = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_allowed_post_types', 'jixcrai_allowed_post_types', array( 'product' ) );
-		$allowed_post_statuses = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_allowed_post_statuses', 'jixcrai_allowed_post_statuses', array( 'publish' ) );
-		$batch_size            = (int) Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_cron_batch_size', 'jixcrai_cron_batch_size', 5 );
+		$allowed_post_types    = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
+		$allowed_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
+		$batch_size            = (int) get_option( 'virastai_acr_cron_batch_size', 5 );
 
 		// Check what features are enabled.
-		$enable_title   = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_enable_title_rewrite', 'jixcrai_enable_title_rewrite', 0 );
-		$enable_content = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_enable_content_rewrite', 'jixcrai_enable_content_rewrite', 1 );
+		$enable_title   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content = get_option( 'virastai_acr_enable_content_rewrite', 1 );
 
 		if ( ! $enable_title && ! $enable_content ) {
 			return; // Nothing to do.
@@ -163,21 +163,13 @@ class Virastai_Acr_Cron {
 			return;
 		}
 
-		$processed_any = false;
-
 		foreach ( $posts as $post ) {
 			try {
-				if ( $this->rewriter->virastai_acr_generate_content( $post->ID, $post ) ) {
-					$processed_any = true;
-				}
+				$this->rewriter->virastai_acr_generate_content( $post->ID, $post );
 			} catch ( Exception $e ) {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Log error for debugging purposes.
 				error_log( 'Virastai Cron Error ID ' . $post->ID . ': ' . $e->getMessage() );
 			}
-		}
-
-		if ( $processed_any ) {
-			Virastai_Acr_Admin_Sidebar::delete_stats_transient();
 		}
 	}
 }

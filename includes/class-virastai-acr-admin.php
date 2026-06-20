@@ -90,9 +90,6 @@ class Virastai_Acr_Admin {
 				$res3 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
 				$res4 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
 
-				// Clean transient statistics cache
-				delete_transient( 'virastai_acr_stats_cache' );
-
 				if ( $res1 || $res2 ) {
 					$message = __( 'Complete reset! Content and Title progress markers removed. Sandbox data cleared.', 'virastai-auto-content-rewrite-with-ai' );
 				} else {
@@ -103,7 +100,6 @@ class Virastai_Acr_Admin {
 			// Reset Title Only.
 			if ( isset( $_POST['virastai_acr_reset_title'] ) ) {
 				if ( delete_metadata( 'post', 0, '_virastai_acr_title_generated', '', true ) ) {
-					delete_transient( 'virastai_acr_stats_cache' );
 					$message = __( 'Title progress reset! Titles are marked for re-processing.', 'virastai-auto-content-rewrite-with-ai' );
 				} else {
 					$message = __( 'No Title progress markers found to reset.', 'virastai-auto-content-rewrite-with-ai' );
@@ -113,7 +109,6 @@ class Virastai_Acr_Admin {
 			// Reset Content Only.
 			if ( isset( $_POST['virastai_acr_reset_content'] ) ) {
 				if ( delete_metadata( 'post', 0, '_virastai_acr_content_generated', '', true ) ) {
-					delete_transient( 'virastai_acr_stats_cache' );
 					$message = __( 'Content progress reset! Posts are marked for content re-processing.', 'virastai-auto-content-rewrite-with-ai' );
 				} else {
 					$message = __( 'No Content progress markers found to reset.', 'virastai-auto-content-rewrite-with-ai' );
@@ -196,7 +191,7 @@ class Virastai_Acr_Admin {
 		add_settings_field(
 			'virastai_acr_openrouter_api_key',
 			__( 'OpenRouter API Key', 'virastai-auto-content-rewrite-with-ai' ),
-			array( $this, 'virastai_acr_render_field_input' ),
+			array( $this, 'virastai_acr_render_field_masked_input' ),
 			'virastai-auto-content-rewrite-with-ai',
 			'virastai_acr_api_section',
 			array(
@@ -207,13 +202,13 @@ class Virastai_Acr_Admin {
 
 		add_settings_field(
 			'virastai_acr_ai_model',
-			__( 'AI Model ID', 'virastai-auto-content-rewrite-with-ai' ),
-			array( $this, 'virastai_acr_render_field_input' ),
+			__( 'Model ID', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_model_select' ),
 			'virastai-auto-content-rewrite-with-ai',
 			'virastai_acr_api_section',
 			array(
 				'label_for'   => 'virastai_acr_ai_model',
-				'description' => __( 'E.g., google/gemini-2.0-flash-lite-preview-02-05:free', 'virastai-auto-content-rewrite-with-ai' ),
+				'description' => __( 'Select a model fetched from OpenRouter. Fallbacks will show in case of network issues.', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 
@@ -425,7 +420,7 @@ class Virastai_Acr_Admin {
 	 */
 	public function virastai_acr_render_field_checkbox_toggle( $args ) {
 		$default = isset( $args['default'] ) ? $args['default'] : 1;
-		$option  = Virastai_Acr_Rewriter::get_option_migrated( $args['label_for'], str_replace( 'virastai_acr_', 'jixcrai_', $args['label_for'] ), $default );
+		$option  = get_option( $args['label_for'], $default );
 		$desc    = isset( $args['description'] ) ? $args['description'] : '';
 		?>
 		<label class="virastai-acr-switch">
@@ -440,7 +435,7 @@ class Virastai_Acr_Admin {
 	 * Render Interval Select.
 	 */
 	public function virastai_acr_render_field_select_interval( $args ) {
-		$option = Virastai_Acr_Rewriter::get_option_migrated( $args['label_for'], str_replace( 'virastai_acr_', 'jixcrai_', $args['label_for'] ), 'hourly' );
+		$option = get_option( $args['label_for'], 'hourly' );
 		$intervals = array(
 			'1min'       => __( 'Every 1 Minute', 'virastai-auto-content-rewrite-with-ai' ),
 			'5min'       => __( 'Every 5 Minutes', 'virastai-auto-content-rewrite-with-ai' ),
@@ -468,7 +463,7 @@ class Virastai_Acr_Admin {
 	 */
 	public function virastai_acr_render_field_post_types() {
 		$post_types  = get_post_types( array( 'public' => true ), 'objects' );
-		$saved_types = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_allowed_post_types', 'jixcrai_allowed_post_types', array( 'product' ) );
+		$saved_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
 
 		if ( ! is_array( $saved_types ) ) {
 			$saved_types = array();
@@ -495,7 +490,7 @@ class Virastai_Acr_Admin {
 	 */
 	public function virastai_acr_render_field_post_statuses() {
 		$target_statuses = array( 'publish', 'draft' );
-		$saved_statuses  = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_allowed_post_statuses', 'jixcrai_allowed_post_statuses', array( 'publish' ) );
+		$saved_statuses  = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
 
 		if ( ! is_array( $saved_statuses ) ) {
 			$saved_statuses = array();
@@ -510,8 +505,8 @@ class Virastai_Acr_Admin {
 			?>
 			<label class="virastai-acr-checkbox-card <?php echo in_array( $status_obj->name, $saved_statuses, true ) ? 'active' : ''; ?>">
 				<input type="checkbox" name="virastai_acr_allowed_post_statuses[]" value="<?php echo esc_attr( $status_obj->name ); ?>" <?php checked( in_array( $status_obj->name, $saved_statuses, true ) ); ?>>
-				<span class="virastai-acr-pt-label"><?php echo esc_html( $status_obj->label ); ?></span>
-				<span class="virastai-acr-pt-name"><?php echo esc_html( $status_obj->name ); ?></span>
+				<span class="virastai-acr-pt-label"><?php echo esc_html($status_obj->label); ?></span>
+				<span class="virastai-acr-pt-name"><?php echo esc_html($status_obj->name); ?></span>
 			</label>
 			<?php
 		}
@@ -519,14 +514,46 @@ class Virastai_Acr_Admin {
 	}
 
 	/**
-	 * Render text input.
+	 * Render masked text/password input for API Key.
 	 */
-	public function virastai_acr_render_field_input( $args ) {
-		$option      = Virastai_Acr_Rewriter::get_option_migrated( $args['label_for'], str_replace( 'virastai_acr_', 'jixcrai_', $args['label_for'] ) );
+	public function virastai_acr_render_field_masked_input( $args ) {
+		$option      = get_option( $args['label_for'] );
 		$desc        = isset( $args['description'] ) ? $args['description'] : '';
 		$placeholder = isset( $args['placeholder'] ) ? $args['placeholder'] : '';
 		?>
-		<input type="text" id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="<?php echo esc_attr( $option ); ?>" class="regular-text virastai-acr-input" placeholder="<?php echo esc_attr( $placeholder ); ?>">
+		<div class="virastai-acr-masked-input-wrapper">
+			<input type="password" id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="<?php echo esc_attr( $option ); ?>" class="regular-text virastai-acr-input" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="off">
+			<button type="button" class="button virastai-acr-toggle-visibility-btn" title="<?php esc_attr_e( 'Toggle Visibility', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+				<span class="dashicons dashicons-visibility"></span>
+			</button>
+		</div>
+		<?php if ( $desc ) : ?>
+			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Render model select dropdown field.
+	 */
+	public function virastai_acr_render_field_model_select( $args ) {
+		$option = get_option( $args['label_for'], 'google/gemini-2.0-flash-lite-preview-02-05:free' );
+		$models = $this->virastai_acr_get_openrouter_models();
+		$desc   = isset( $args['description'] ) ? $args['description'] : '';
+
+		if ( ! array_key_exists( $option, $models ) && ! empty( $option ) ) {
+			$models[ $option ] = $option;
+		}
+		?>
+		<div class="virastai-acr-select-wrapper">
+			<select name="<?php echo esc_attr( $args['label_for'] ); ?>" id="<?php echo esc_attr( $args['label_for'] ); ?>" class="virastai-acr-select">
+				<?php foreach ( $models as $val => $label ) : ?>
+					<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $option, $val ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
 		<?php if ( $desc ) : ?>
 			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
 		<?php endif; ?>
@@ -537,7 +564,7 @@ class Virastai_Acr_Admin {
 	 * Render number input.
 	 */
 	public function virastai_acr_render_field_number( $args ) {
-		$option = Virastai_Acr_Rewriter::get_option_migrated( $args['label_for'], str_replace( 'virastai_acr_', 'jixcrai_', $args['label_for'] ), 5 );
+		$option = get_option( $args['label_for'], 5 );
 		$desc   = isset( $args['description'] ) ? $args['description'] : '';
 		?>
 		<input type="number" id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_attr( $args['label_for'] ); ?>" value="<?php echo esc_attr( $option ); ?>" class="small-text virastai-acr-input" min="1" max="50">
@@ -552,12 +579,7 @@ class Virastai_Acr_Admin {
 	 */
 	public function virastai_acr_render_field_textarea( $args ) {
 		$default = isset( $args['default_value'] ) ? $args['default_value'] : '';
-		// Fix legacy option lookup
-		$legacy_key = str_replace( 'virastai_acr_', 'jixcrai_', $args['label_for'] );
-		if ( 'virastai_acr_title_skip_incomplete' === $args['label_for'] ) {
-			$legacy_key = 'jixcrai_skip_incomplete';
-		}
-		$option = Virastai_Acr_Rewriter::get_option_migrated( $args['label_for'], $legacy_key, $default );
+		$option  = get_option( $args['label_for'], $default );
 
 		if ( 'virastai_acr_base_prompt_template' === $args['label_for'] && empty( $option ) ) {
 			$option = $default;
@@ -568,6 +590,99 @@ class Virastai_Acr_Admin {
 			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
 		<?php endif; ?>
 		<?php
+	}
+
+	/**
+	 * Fetch OpenRouter models and cache them for 1 hour.
+	 *
+	 * @return array List of models (ID => Name).
+	 */
+	private function virastai_acr_get_openrouter_models() {
+		$cache_key = 'virastai_acr_models_cache';
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$response = wp_remote_get( 'https://openrouter.ai/api/v1/models' );
+
+		if ( is_wp_error( $response ) ) {
+			return $this->virastai_acr_get_fallback_models();
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $response_code ) {
+			return $this->virastai_acr_get_fallback_models();
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( ! isset( $data['data'] ) || ! is_array( $data['data'] ) ) {
+			return $this->virastai_acr_get_fallback_models();
+		}
+
+		$models = array();
+		foreach ( $data['data'] as $model_item ) {
+			if ( isset( $model_item['id'], $model_item['name'] ) ) {
+				$models[ $model_item['id'] ] = $model_item['name'] . ' (' . $model_item['id'] . ')';
+			}
+		}
+
+		if ( ! empty( $models ) ) {
+			asort( $models );
+			set_transient( $cache_key, $models, HOUR_IN_SECONDS );
+			return $models;
+		}
+
+		return $this->virastai_acr_get_fallback_models();
+	}
+
+	/**
+	 * Fallback models list in case of network issue.
+	 *
+	 * @return array
+	 */
+	private function virastai_acr_get_fallback_models() {
+		return array(
+			'google/gemini-2.0-flash-lite-preview-02-05:free' => 'Model 2.0 Flash Lite (free)',
+			'google/gemma-2-9b-it:free'                      => 'Gemma 2 9B (free)',
+			'meta-llama/llama-3-8b-instruct:free'            => 'Llama 3 8B (free)',
+			'mistralai/mistral-7b-instruct:free'             => 'Mistral 7B (free)',
+		);
+	}
+
+	/**
+	 * Render a single settings section manually for custom tab layout.
+	 *
+	 * @param string $page       Settings page slug.
+	 * @param string $section_id Section identifier.
+	 */
+	private function do_settings_sections_custom( $page, $section_id ) {
+		global $wp_settings_sections, $wp_settings_fields;
+
+		if ( ! isset( $wp_settings_sections[ $page ][ $section_id ] ) ) {
+			return;
+		}
+
+		$section = $wp_settings_sections[ $page ][ $section_id ];
+
+		if ( $section['title'] ) {
+			echo "<h2>{$section['title']}</h2>\n";
+		}
+
+		if ( $section['callback'] ) {
+			call_user_func( $section['callback'], $section );
+		}
+
+		if ( ! isset( $wp_settings_fields[ $page ][ $section_id ] ) ) {
+			return;
+		}
+
+		echo '<table class="form-table" role="presentation">';
+		do_settings_fields( $page, $section_id );
+		echo '</table>';
 	}
 
 	/**
@@ -589,10 +704,34 @@ class Virastai_Acr_Admin {
 				<div class="virastai-acr-main">
 					<div class="virastai-acr-container">
 						<form action="options.php" method="post" id="virastai-acr-settings-form">
-							<?php
-							settings_fields( 'virastai_acr_options_group' );
-							do_settings_sections( 'virastai-auto-content-rewrite-with-ai' );
-							?>
+							<?php settings_fields( 'virastai_acr_options_group' ); ?>
+
+							<!-- Tabs Nav -->
+							<h2 class="nav-tab-wrapper virastai-acr-tabs-nav">
+								<a href="#tab-api" class="nav-tab nav-tab-active" data-tab="api"><?php esc_html_e( 'API Configuration', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation & Targeting', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-content" class="nav-tab" data-tab="content"><?php esc_html_e( 'Content Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-title" class="nav-tab" data-tab="title"><?php esc_html_e( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+							</h2>
+
+							<!-- Tab Contents -->
+							<div id="tab-api" class="virastai-acr-tab-content active">
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_api_section' ); ?>
+							</div>
+
+							<div id="tab-automation" class="virastai-acr-tab-content">
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_automation_section' ); ?>
+							</div>
+
+							<div id="tab-content" class="virastai-acr-tab-content">
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_base_prompt_section' ); ?>
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_content_section' ); ?>
+							</div>
+
+							<div id="tab-title" class="virastai-acr-tab-content">
+								<?php $this->do_settings_sections_custom( 'virastai-auto-content-rewrite-with-ai', 'virastai_acr_title_section' ); ?>
+							</div>
+
 							<div class="virastai-acr-footer-actions">
 								<?php submit_button( __( 'Save Settings', 'virastai-auto-content-rewrite-with-ai' ), 'primary large', 'submit', false ); ?>
 							</div>
@@ -600,7 +739,7 @@ class Virastai_Acr_Admin {
 					</div>
 				</div>
 
-				<!-- Sidebar (Loaded from external class) -->
+				<!-- Sidebar -->
 				<?php Virastai_Acr_Admin_Sidebar::render(); ?>
 			</div>
 		</div>

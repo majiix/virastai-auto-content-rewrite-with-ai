@@ -12,16 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Virastai_Acr_Admin_Sidebar {
 
 	/**
-	 * Delete cached statistics transient.
-	 */
-	public static function delete_stats_transient() {
-		$selected_post_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
-		$selected_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
-		$transient_key = 'v_stats_' . md5( wp_json_encode( $selected_post_types ) . wp_json_encode( $selected_post_statuses ) );
-		delete_transient( $transient_key );
-	}
-
-	/**
 	 * Render the sidebar HTML.
 	 */
 	public static function render() {
@@ -47,65 +37,44 @@ class Virastai_Acr_Admin_Sidebar {
 
 		// Only run queries if we have valid settings.
 		if ( ! empty( $selected_post_types ) && ! empty( $selected_post_statuses ) ) {
-			// Generate Transient Key based on current settings.
-			$transient_key = 'v_stats_' . md5( wp_json_encode( $selected_post_types ) . wp_json_encode( $selected_post_statuses ) );
-			$cached        = get_transient( $transient_key );
+			$placeholders_types    = implode( ', ', array_fill( 0, count( $selected_post_types ), '%s' ) );
+			$placeholders_statuses = implode( ', ', array_fill( 0, count( $selected_post_statuses ), '%s' ) );
+			$sql_params            = array_merge( $selected_post_types, $selected_post_statuses );
 
-			if ( false !== $cached ) {
-				$processed_title_count   = $cached['title'];
-				$processed_content_count = $cached['content'];
-				$total_count             = $cached['total'];
-			} else {
-				$placeholders_types    = implode( ', ', array_fill( 0, count( $selected_post_types ), '%s' ) );
-				$placeholders_statuses = implode( ', ', array_fill( 0, count( $selected_post_statuses ), '%s' ) );
-				$sql_params            = array_merge( $selected_post_types, $selected_post_statuses );
+			// 1. Count Processed Titles.
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- Query structure requires dynamic placeholders for IN clause.
+			$sql_title = "
+				SELECT COUNT(p.ID)
+				FROM {$wpdb->posts} p
+				INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+				WHERE p.post_type IN ($placeholders_types)
+				AND p.post_status IN ($placeholders_statuses)
+				AND pm.meta_key = '_virastai_acr_title_generated'
+			";
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$processed_title_count = (int) $wpdb->get_var( $wpdb->prepare( $sql_title, $sql_params ) );
+			// phpcs:enable
 
-				// 1. Count Processed Titles.
-				// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- Query structure requires dynamic placeholders for IN clause.
-				$sql_title = "
-					SELECT COUNT(p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-					WHERE p.post_type IN ($placeholders_types)
-					AND p.post_status IN ($placeholders_statuses)
-					AND pm.meta_key = '_virastai_acr_title_generated'
-				";
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$processed_title_count = (int) $wpdb->get_var( $wpdb->prepare( $sql_title, $sql_params ) );
-				// phpcs:enable
+			// 2. Count Processed Content.
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+			$sql_content = "
+				SELECT COUNT(p.ID)
+				FROM {$wpdb->posts} p
+				INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+				WHERE p.post_type IN ($placeholders_types)
+				AND p.post_status IN ($placeholders_statuses)
+				AND pm.meta_key = '_virastai_acr_content_generated'
+			";
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$processed_content_count = (int) $wpdb->get_var( $wpdb->prepare( $sql_content, $sql_params ) );
+			// phpcs:enable
 
-				// 2. Count Processed Content.
-				// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-				$sql_content = "
-					SELECT COUNT(p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-					WHERE p.post_type IN ($placeholders_types)
-					AND p.post_status IN ($placeholders_statuses)
-					AND pm.meta_key = '_virastai_acr_content_generated'
-				";
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$processed_content_count = (int) $wpdb->get_var( $wpdb->prepare( $sql_content, $sql_params ) );
-				// phpcs:enable
-
-				// 3. Count Total items matching Types AND Statuses.
-				foreach ( $selected_post_types as $pt ) {
-					$counts = wp_count_posts( $pt );
-					foreach ( $selected_post_statuses as $status ) {
-						$total_count += ( isset( $counts->$status ) ? (int) $counts->$status : 0 );
-					}
+			// 3. Count Total items matching Types AND Statuses.
+			foreach ( $selected_post_types as $pt ) {
+				$counts = wp_count_posts( $pt );
+				foreach ( $selected_post_statuses as $status ) {
+					$total_count += ( isset( $counts->$status ) ? (int) $counts->$status : 0 );
 				}
-
-				// Cache results for 5 minutes via transient.
-				set_transient(
-					$transient_key,
-					array(
-						'title'   => $processed_title_count,
-						'content' => $processed_content_count,
-						'total'   => $total_count,
-					),
-					300
-				);
 			}
 		}
 

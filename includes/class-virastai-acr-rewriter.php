@@ -17,50 +17,6 @@ class Virastai_Acr_Rewriter {
 	const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 	/**
-	 * Helper to get option with on-the-fly migration from old jixcrai option keys.
-	 *
-	 * @param string $new_key New option name.
-	 * @param string $old_key Old option name.
-	 * @param mixed  $default Default value.
-	 * @return mixed Option value.
-	 */
-	public static function get_option_migrated( $new_key, $old_key, $default = false ) {
-		$value = get_option( $new_key, 'NOT_SET' );
-		if ( 'NOT_SET' === $value ) {
-			$old_value = get_option( $old_key, 'NOT_SET' );
-			if ( 'NOT_SET' !== $old_value ) {
-				update_option( $new_key, $old_value );
-				return $old_value;
-			}
-			return $default;
-		}
-		return $value;
-	}
-
-	/**
-	 * Helper to get post metadata with on-the-fly migration from old jixcrai keys.
-	 *
-	 * @param int    $post_id Post ID.
-	 * @param string $new_key New meta key.
-	 * @param string $old_key Old meta key.
-	 * @return string Meta value.
-	 */
-	public static function get_post_meta_migrated( $post_id, $new_key, $old_key ) {
-		$metadata = get_post_meta( $post_id, $new_key );
-		if ( empty( $metadata ) ) {
-			$old_metadata = get_post_meta( $post_id, $old_key );
-			if ( ! empty( $old_metadata ) ) {
-				$value = $old_metadata[0];
-				update_post_meta( $post_id, $new_key, $value );
-				delete_post_meta( $post_id, $old_key );
-				return $value;
-			}
-			return '';
-		}
-		return $metadata[0];
-	}
-
-	/**
 	 * Rewrites product content using OpenRouter API.
 	 *
 	 * @param int     $product_id Product ID.
@@ -68,24 +24,24 @@ class Virastai_Acr_Rewriter {
 	 * @return bool True if at least one update occurred, false otherwise.
 	 */
 	public function virastai_acr_generate_content( $product_id, $post ) {
-		// --- 1. Load Settings (with migration check) ---
-		$enable_title_rewrite   = self::get_option_migrated( 'virastai_acr_enable_title_rewrite', 'jixcrai_enable_title_rewrite', 0 );
-		$enable_content_rewrite = self::get_option_migrated( 'virastai_acr_enable_content_rewrite', 'jixcrai_enable_content_rewrite', 1 );
-		$sandbox_mode_enabled   = self::get_option_migrated( 'virastai_acr_enable_sandbox_mode', 'jixcrai_enable_sandbox_mode', 0 );
+		// --- 1. Load Settings ---
+		$enable_title_rewrite   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content_rewrite = get_option( 'virastai_acr_enable_content_rewrite', 1 );
+		$sandbox_mode_enabled   = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
 
 		// Skip settings.
-		$skip_incomplete_title   = self::get_option_migrated( 'virastai_acr_title_skip_incomplete', 'jixcrai_skip_incomplete', 1 );
-		$skip_incomplete_content = self::get_option_migrated( 'virastai_acr_content_skip_incomplete', 'jixcrai_content_skip_incomplete', 1 );
+		$skip_incomplete_title   = get_option( 'virastai_acr_title_skip_incomplete', 1 );
+		$skip_incomplete_content = get_option( 'virastai_acr_content_skip_incomplete', 1 );
 
 		// Formatting settings.
-		$preserve_images   = self::get_option_migrated( 'virastai_acr_preserve_images', 'jixcrai_preserve_images', 1 );
-		$enable_formatting = self::get_option_migrated( 'virastai_acr_enable_formatting', 'jixcrai_enable_formatting', 1 );
-		$remove_title_html = self::get_option_migrated( 'virastai_acr_remove_title_html', 'jixcrai_remove_title_html', 1 );
+		$preserve_images   = get_option( 'virastai_acr_preserve_images', 1 );
+		$enable_formatting = get_option( 'virastai_acr_enable_formatting', 1 );
+		$remove_title_html = get_option( 'virastai_acr_remove_title_html', 1 );
 
 		// Prompts.
-		$base_prompt_tpl     = self::get_option_migrated( 'virastai_acr_base_prompt_template', 'jixcrai_base_prompt_template', "Product: {product_title}\n\nContent: {post_content}" );
-		$title_prompt_inst   = self::get_option_migrated( 'virastai_acr_title_prompt_template', 'jixcrai_title_prompt_template', 'Generate a catchy product title based on the context above.' );
-		$content_prompt_inst = self::get_option_migrated( 'virastai_acr_prompt_template', 'jixcrai_prompt_template', 'Rewrite the content based on the context above.' );
+		$base_prompt_tpl     = get_option( 'virastai_acr_base_prompt_template', "Product: {product_title}\n\nContent: {post_content}" );
+		$title_prompt_inst   = get_option( 'virastai_acr_title_prompt_template', 'Generate a catchy product title based on the context above.' );
+		$content_prompt_inst = get_option( 'virastai_acr_prompt_template', 'Rewrite the content based on the context above.' );
 
 		$current_title   = get_the_title( $product_id );
 		$current_content = $post->post_content;
@@ -101,8 +57,8 @@ class Virastai_Acr_Rewriter {
 		$has_changes = false;
 
 		// --- 2. Determine what needs processing ---
-		$title_already_done   = self::get_post_meta_migrated( $product_id, '_virastai_acr_title_generated', '_jixcrai_title_generated' );
-		$content_already_done = self::get_post_meta_migrated( $product_id, '_virastai_acr_content_generated', '_jixcrai_content_generated' );
+		$title_already_done   = get_post_meta( $product_id, '_virastai_acr_title_generated', true );
+		$content_already_done = get_post_meta( $product_id, '_virastai_acr_content_generated', true );
 
 		$process_title   = $enable_title_rewrite && ! $title_already_done;
 		$process_content = $enable_content_rewrite && ! $content_already_done;
@@ -300,8 +256,8 @@ class Virastai_Acr_Rewriter {
 	 * @return string|false Generated text or false on failure.
 	 */
 	private function virastai_acr_call_api( $prompt, $is_json_mode = false ) {
-		$api_key = self::get_option_migrated( 'virastai_acr_openrouter_api_key', 'jixcrai_openrouter_api_key', '' );
-		$model   = self::get_option_migrated( 'virastai_acr_ai_model', 'jixcrai_ai_model', 'google/gemini-2.0-flash-lite-preview-02-05:free' );
+		$api_key = get_option( 'virastai_acr_openrouter_api_key', '' );
+		$model   = get_option( 'virastai_acr_ai_model', 'google/gemini-2.0-flash-lite-preview-02-05:free' );
 
 		$api_key = trim( $api_key );
 
@@ -371,7 +327,7 @@ class Virastai_Acr_Rewriter {
 	 * @param string $message The message to log.
 	 */
 	private function log( $message ) {
-		$logging_enabled = self::get_option_migrated( 'virastai_acr_enable_logging', 'jixcrai_enable_logging', 0 );
+		$logging_enabled = get_option( 'virastai_acr_enable_logging', 0 );
 		if ( $logging_enabled ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Log error for debugging purposes.
 			error_log( '[VirastaiACR] ' . $message );

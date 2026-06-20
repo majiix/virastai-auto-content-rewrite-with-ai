@@ -41,3 +41,56 @@
     font-style: italic;
     color: #646970;
 }
+
+/* Skeleton Loading Animation */
+.virastai-acr-skeleton-loader {
+    width: 100%;
+}
+
+.virastai-acr-skeleton-item {
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Pulsing reflection effect */
+.virastai-acr-skeleton-item::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 20%,
+        rgba(255, 255, 255, 0.6) 60%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: virastaiPulse 1.6s infinite ease-in-out;
+    content: '';
+}
+
+@keyframes virastaiPulse {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.virastai-acr-skeleton-item.title {
+    height: 35px;
+    width: 70%;
+    margin-bottom: 20px;
+}
+
+.virastai-acr-skeleton-item.line {
+    height: 16px;
+    width: 100%;
+}
+
+.virastai-acr-skeleton-item.line.short {
+    width: 50%;
+}

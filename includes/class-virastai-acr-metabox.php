@@ -65,12 +65,12 @@ class Virastai_Acr_Metabox {
 	 * Register the metabox for allowed post types.
 	 */
 	public function virastai_acr_add_sandbox_metabox() {
-		$sandbox_enabled = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_enable_sandbox_mode', 'jixcrai_enable_sandbox_mode', 0 );
+		$sandbox_enabled = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
 		if ( ! $sandbox_enabled ) {
 			return;
 		}
 
-		$allowed_post_types = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_allowed_post_types', 'jixcrai_allowed_post_types', array( 'product' ) );
+		$allowed_post_types = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
 		if ( ! is_array( $allowed_post_types ) ) {
 			return;
 		}
@@ -93,11 +93,11 @@ class Virastai_Acr_Metabox {
 	 * @param WP_Post $post The post object.
 	 */
 	public function virastai_acr_render_metabox( $post ) {
-		$sandbox_title   = Virastai_Acr_Rewriter::get_post_meta_migrated( $post->ID, '_virastai_acr_sandbox_title', '_jixcrai_sandbox_title' );
-		$sandbox_content = Virastai_Acr_Rewriter::get_post_meta_migrated( $post->ID, '_virastai_acr_sandbox_content', '_jixcrai_sandbox_content' );
+		$sandbox_title   = get_post_meta( $post->ID, '_virastai_acr_sandbox_title', true );
+		$sandbox_content = get_post_meta( $post->ID, '_virastai_acr_sandbox_content', true );
 
-		$enable_title_rewrite   = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_enable_title_rewrite', 'jixcrai_enable_title_rewrite', 0 );
-		$enable_content_rewrite = Virastai_Acr_Rewriter::get_option_migrated( 'virastai_acr_enable_content_rewrite', 'jixcrai_enable_content_rewrite', 1 );
+		$enable_title_rewrite   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content_rewrite = get_option( 'virastai_acr_enable_content_rewrite', 1 );
 
 		?>
 		<div class="virastai-acr-metabox-wrapper" id="virastai-acr-metabox-container">
@@ -129,6 +129,15 @@ class Virastai_Acr_Metabox {
 			<?php if ( empty( $sandbox_title ) && empty( $sandbox_content ) ) : ?>
 				<p class="virastai-acr-empty-msg"><?php esc_html_e( 'No content generated yet.', 'virastai-auto-content-rewrite-with-ai' ); ?></p>
 			<?php endif; ?>
+
+			<!-- Skeleton Loader Placeholder -->
+			<div class="virastai-acr-skeleton-loader" style="display:none; margin-top:15px;">
+				<div class="virastai-acr-skeleton-item title"></div>
+				<div class="virastai-acr-skeleton-item line"></div>
+				<div class="virastai-acr-skeleton-item line"></div>
+				<div class="virastai-acr-skeleton-item line"></div>
+				<div class="virastai-acr-skeleton-item line short"></div>
+			</div>
 
 			<div class="virastai-acr-sandbox-fields" <?php echo ( empty( $sandbox_title ) && empty( $sandbox_content ) ) ? 'style="display:none;"' : ''; ?>>
 				<div class="virastai-acr-field-group virastai-acr-title-group" <?php echo empty( $sandbox_title ) ? 'style="display:none;"' : ''; ?>>
@@ -184,9 +193,6 @@ class Virastai_Acr_Metabox {
 		if ( $result ) {
 			$new_title   = get_post_meta( $post_id, '_virastai_acr_sandbox_title', true );
 			$new_content = get_post_meta( $post_id, '_virastai_acr_sandbox_content', true );
-
-			// Clear stats transients on updates
-			Virastai_Acr_Admin_Sidebar::delete_stats_transient();
 
 			wp_send_json_success( array(
 				'title'   => $new_title,

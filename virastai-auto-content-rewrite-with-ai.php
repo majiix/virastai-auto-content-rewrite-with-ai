@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: Virastai Auto Content Rewrite With AI
- * Plugin URI:  https://wordpress.org/plugins/jix-content-rewriter-with-ai
+ * Plugin URI:  https://wordpress.org/plugins/virastai-auto-content-rewrite-with-ai
  * Description: Connects to OpenRouter (Large Language Models) to rewrite or translate WooCommerce product content automatically.
  * Version:     1.5.0
- * Author:      Majid H.Fard (Majix)
+ * Author:      micromax
  * Text Domain: virastai-auto-content-rewrite-with-ai
  * Domain Path: /languages
  * License:     GPLv2 or later

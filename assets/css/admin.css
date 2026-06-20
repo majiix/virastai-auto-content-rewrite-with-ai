@@ -48,6 +48,37 @@
     padding: 20px;
 }
 
+/* Tabs Navigation */
+.virastai-acr-tabs-nav {
+    margin-top: 0 !important;
+    margin-bottom: 25px !important;
+    border-bottom: 1px solid #c3c4c7;
+    padding-bottom: 0;
+}
+
+.virastai-acr-tabs-nav .nav-tab {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Tab contents active states */
+.virastai-acr-tab-content {
+    display: none;
+    animation: virastaiFadeIn 0.3s ease;
+}
+
+.virastai-acr-tab-content.active {
+    display: block;
+}
+
+@keyframes virastaiFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Hide default WP Table lines to create a flow */
 .virastai-acr-container .form-table {
     margin-top: 0;
@@ -90,6 +121,59 @@
 .virastai-acr-input:focus {
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Masked Input password wrapper */
+.virastai-acr-masked-input-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    max-width: 350px;
+}
+
+.virastai-acr-masked-input-wrapper input {
+    padding-right: 40px !important;
+    width: 100%;
+}
+
+.virastai-acr-masked-input-wrapper .virastai-acr-toggle-visibility-btn {
+    position: absolute;
+    right: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    color: #646970;
+    padding: 0 10px !important;
+    height: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.virastai-acr-masked-input-wrapper .virastai-acr-toggle-visibility-btn:hover {
+    color: #2271b1;
+}
+
+/* Model Select Dropdown field */
+.virastai-acr-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 350px;
+}
+
+.virastai-acr-select {
+    width: 100%;
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
 }
 
 .virastai-acr-textarea {

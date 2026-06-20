@@ -17,9 +17,9 @@ A WordPress plugin that connects to OpenRouter to rewrite or translate WooCommer
 1. **Entrypoint**: Bootstraps the plugin, registers constants, and schedules background cron tasks.
 2. **Rewriter Engine**: Connects to the external endpoint to perform content updates. Supports a JSON schema mode to guarantee parsed results contain both title and body text.
 3. **Cron Manager**: Handles periodic batch execution. Queries the database using index-friendly lookups.
-4. **Admin Panel**: Manages API credentials, prompts, automation intervals, and targeting options.
+4. **Admin Panel**: Manages API credentials, dynamic model retrieval, prompt options, and tabbed settings pages.
 5. **Sandbox Review**: Displays generated content inside a metabox for preview before saving changes to the live fields.
-6. **Statistics & Actions**: Monitors rewriting progress using cached transient values.
+6. **Statistics & Actions**: Monitors rewriting progress on the settings sidebar.
 
 ## Verification Commands
 - Check PHP syntax:

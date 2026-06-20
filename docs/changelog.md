@@ -11,3 +11,10 @@ step 2:
 6- Fixed Markdown formatting replacement expressions to avoid destroying raw symbol indicators.
 7- Created option and post meta migration helpers for a seamless upgrade.
 
+step 3:
+1- Removed on-the-fly option and post metadata migration code.
+2- Removed transient caching for statistics, querying counts directly from the database on page load.
+3- Masked the OpenRouter API Key input field as a password field with a visibility toggle button.
+4- Implemented a network call to fetch and cache the model list from OpenRouter for 1 hour, displaying them in a select dropdown.
+5- Implemented a tabbed layout navigation for settings sections (API, Automation, Content, Title).
+6- Added pulsing skeleton loading indicators during AJAX draft regeneration.

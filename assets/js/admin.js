@@ -3,7 +3,38 @@
  */
 jQuery(document).ready(function ($) {
 
-    // --- Modern UI: Post Type Checkbox Cards ---
+    // --- Tab Switching Logic ---
+    $('.virastai-acr-tabs-nav .nav-tab').on('click', function(e) {
+        e.preventDefault();
+        const tabLink = $(this);
+        const tabId = tabLink.data('tab');
+
+        // Toggle active tab link class
+        $('.virastai-acr-tabs-nav .nav-tab').removeClass('nav-tab-active');
+        tabLink.addClass('nav-tab-active');
+
+        // Toggle active tab content visibility
+        $('.virastai-acr-tab-content').removeClass('active');
+        $('#tab-' + tabId).addClass('active');
+    });
+
+    // --- Masked Password Field Visibility Toggle ---
+    $('.virastai-acr-toggle-visibility-btn').on('click', function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const input = btn.siblings('.virastai-acr-input');
+        const icon = btn.find('.dashicons');
+
+        if (input.attr('type') === 'password') {
+            input.attr('type', 'text');
+            icon.removeClass('dashicons-visibility').addClass('dashicons-hidden');
+        } else {
+            input.attr('type', 'password');
+            icon.removeClass('dashicons-hidden').addClass('dashicons-visibility');
+        }
+    });
+
+    // --- Post Type Checkbox Cards ---
     $('.virastai-acr-checkbox-card input[type="checkbox"]').on('change', function() {
         const parentCard = $(this).closest('.virastai-acr-checkbox-card');
         if ($(this).is(':checked')) {

@@ -80,7 +80,7 @@ Paste this ID into the Model ID field in the plugin settings.
 
 == Installation ==
 
-Upload the plugin files to the /wp-content/plugins/jix-content-rewriter-with-ai directory, or install the plugin through the WordPress plugins screen.
+Upload the plugin files to the /wp-content/plugins/virastai-auto-content-rewrite-with-ai directory, or install the plugin through the WordPress plugins screen.
 
 Activate the plugin through the 'Plugins' screen in WordPress.
 
@@ -128,15 +128,19 @@ Rebranded the plugin name to Virastai Auto Content Rewrite With AI.
 
 Updated PHP classes, constants, variables, hooks, settings options, and database metadata prefixing to use the new brand.
 
-Added transient statistics caching to improve settings dashboard loading times.
-
 Enhanced database indexing efficiency by querying cron queues by ID instead of random order.
 
 Resolved CSRF vulnerabilities in setting reset and progress clear operations.
 
 Improved Markdown formatting replacement expressions to protect non-markdown characters.
 
-Added an upgrade script for automated option and post meta migration.
+Implemented tabbed settings page navigation.
+
+Masked OpenRouter API Key and added toggling visibility option.
+
+Fetched OpenRouter model lists dynamically and cached results for 1 hour.
+
+Integrated pulsing skeleton loading states for ajax draft regeneration.
 
 = 1.3.0 =
 

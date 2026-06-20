@@ -50,7 +50,5 @@ delete_metadata( 'post', 0, '_virastai_acr_title_generated', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
 
-// 4. Delete Statistics Transients.
-global $wpdb;
-// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_v_stats_%' OR option_name LIKE '_transient_timeout_v_stats_%'" );
+// 4. Delete Model Cache Transient.
+delete_transient( 'virastai_acr_models_cache' );

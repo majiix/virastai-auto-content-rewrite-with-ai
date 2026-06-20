@@ -12,8 +12,11 @@ jQuery(document).ready(function ($) {
         const container = $('#virastai-acr-metabox-container');
         const loader = container.find('.virastai-acr-loader');
 
-        // Disable UI
+        // Disable UI and show skeleton loader
         btn.prop('disabled', true);
+        container.find('.virastai-acr-empty-msg').hide();
+        container.find('.virastai-acr-sandbox-fields').hide();
+        container.find('.virastai-acr-skeleton-loader').fadeIn();
         loader.fadeIn();
 
         $.ajax({
@@ -29,8 +32,8 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     const data = response.data;
 
-                    // Hide empty message
-                    container.find('.virastai-acr-empty-msg').hide();
+                    // Hide skeleton and show fields
+                    container.find('.virastai-acr-skeleton-loader').hide();
                     container.find('.virastai-acr-sandbox-fields').show();
 
                     // Update fields
@@ -44,13 +47,17 @@ jQuery(document).ready(function ($) {
                     }
                 } else {
                     alert('Error: ' + response.data);
+                    // Re-show active fields on error
+                    container.find('.virastai-acr-sandbox-fields').show();
                 }
             },
             error: function() {
                 alert('Request failed. Please check console.');
+                container.find('.virastai-acr-sandbox-fields').show();
             },
             complete: function() {
                 btn.prop('disabled', false);
+                container.find('.virastai-acr-skeleton-loader').hide();
                 loader.hide();
             }
         });
