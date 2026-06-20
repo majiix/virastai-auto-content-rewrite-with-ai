@@ -297,6 +297,9 @@ jQuery(document).ready(function ($) {
     function virastaiAcrBeautifyMessage(text) {
         if (!text) return '';
         
+        // Collapse 3 or more consecutive newlines down to 2
+        text = text.replace(/(\r?\n){3,}/g, '\n\n');
+        
         // Check if the entire string is valid JSON
         try {
             const parsed = JSON.parse(text);

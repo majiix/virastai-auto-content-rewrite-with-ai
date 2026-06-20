@@ -35,6 +35,14 @@ class Virastai_Acr_Metabox {
 			return;
 		}
 
+		// Do not show metabox or enqueue assets if all rewrite features are disabled.
+		$enable_title   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content = get_option( 'virastai_acr_enable_content_rewrite', 1 );
+		$enable_excerpt = get_option( 'virastai_acr_enable_excerpt_rewrite', 0 );
+		if ( ! $enable_title && ! $enable_content && ! $enable_excerpt ) {
+			return;
+		}
+
 		if ( ! self::current_user_has_access() ) {
 			return;
 		}
@@ -94,6 +102,14 @@ class Virastai_Acr_Metabox {
 
 		$sandbox_enabled = get_option( 'virastai_acr_enable_sandbox_mode', 0 );
 		if ( ! $sandbox_enabled ) {
+			return;
+		}
+
+		// Do not show metabox or enqueue assets if all rewrite features are disabled.
+		$enable_title   = get_option( 'virastai_acr_enable_title_rewrite', 0 );
+		$enable_content = get_option( 'virastai_acr_enable_content_rewrite', 1 );
+		$enable_excerpt = get_option( 'virastai_acr_enable_excerpt_rewrite', 0 );
+		if ( ! $enable_title && ! $enable_content && ! $enable_excerpt ) {
 			return;
 		}
 

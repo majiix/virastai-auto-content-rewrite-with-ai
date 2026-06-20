@@ -153,3 +153,11 @@ step 31:
 2- Refactored duplicated title cleaning and tags stripping logic in class-virastai-acr-rewriter.php into a private helper function.
 3- Enhanced combined prompt generation by dynamically assigning sequential numbers to task instructions.
 4- Fixed outdated placeholder reference in readme.txt FAQ to use post_title.
+
+step 32:
+1- Added filters in class-virastai-acr-logger.php and admin.js to collapse three or more consecutive empty lines in system logs down to a maximum of two newlines.
+2- Stripped trailing newlines and carriage returns from log messages in get_logs_formatted to clean up raw copied logs.
+3- Hidden the post edit sandbox metabox and disabled enqueuing related styles and scripts if all rewrite options (Title, Content, Excerpt) are disabled.
+
+step 33:
+1- Added time limit extension calling set_time_limit(120) before remote API requests in class-virastai-acr-rewriter.php and class-virastai-acr-admin.php. This prevents PHP max_execution_time timeout errors (HTTP 500) during long-running model generations.

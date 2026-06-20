@@ -394,6 +394,10 @@ class Virastai_Acr_Rewriter {
 			'api_request'
 		);
 
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 120 );
+		}
+
 		$response = wp_remote_post( self::API_ENDPOINT, $request_args );
 
 		if ( is_wp_error( $response ) ) {

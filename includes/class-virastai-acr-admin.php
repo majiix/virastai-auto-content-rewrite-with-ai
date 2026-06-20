@@ -874,6 +874,10 @@ class Virastai_Acr_Admin {
 			Virastai_Acr_Logger::log( 'api_request', "GET request sent to: $url" );
 		}
 
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 120 );
+		}
+
 		$response = wp_remote_get( $url );
 
 		if ( is_wp_error( $response ) ) {

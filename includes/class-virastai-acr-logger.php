@@ -88,6 +88,9 @@ class Virastai_Acr_Logger {
 		$message = preg_replace( '/"Authorization"\s*:\s*"Bearer\s+[^"]+"/', '"Authorization":"Bearer [MASKED]"', $message );
 		$message = preg_replace( '/Authorization:\s*Bearer\s+[^\r\n]+/', 'Authorization: Bearer [MASKED]', $message );
 
+		// Collapse 3 or more consecutive newlines down to 2.
+		$message = preg_replace( '/(\r?\n){3,}/', "\n\n", $message );
+
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$wpdb->insert(
 			$table_name,
@@ -190,11 +193,12 @@ class Virastai_Acr_Logger {
 
 		$formatted = '';
 		foreach ( $logs as $log ) {
+			$message = rtrim( $log['message'], "\r\n" );
 			$formatted .= sprintf(
-				"[%s] [%s] %s\n",
+				"[%s] [%s] %s\n\n",
 				$log['created_at'],
 				strtoupper( $log['type'] ),
-				$log['message']
+				$message
 			);
 		}
 
