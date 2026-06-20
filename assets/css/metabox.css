@@ -1,0 +1,43 @@
+/**
+ * Virastai Auto Content Rewrite Metabox Styles
+ */
+
+.virastai-acr-metabox-wrapper {
+    margin-top: 10px;
+}
+
+.virastai-acr-metabox-actions .button {
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.virastai-acr-metabox-actions .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 3px;
+}
+
+.virastai-acr-field-group {
+    margin-bottom: 15px;
+}
+
+.virastai-acr-field-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: #2c3338;
+}
+
+.virastai-acr-field-group input[readonly],
+.virastai-acr-field-group textarea[readonly] {
+    background-color: #f0f0f1;
+    cursor: default;
+    color: #50575e;
+}
+
+.virastai-acr-empty-msg {
+    font-style: italic;
+    color: #646970;
+}

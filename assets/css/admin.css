@@ -1,0 +1,306 @@
+/**
+ * Virastai Auto Content Rewrite Modern Admin Styles
+ */
+
+/* Main Wrapper */
+.virastai-acr-settings-wrapper {
+    max-width: 1200px;
+    margin: 20px 20px 0 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.virastai-acr-header h1 {
+    font-weight: 700;
+    color: #1d2327;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Layout Grid */
+.virastai-acr-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.virastai-acr-main {
+    flex: 3;
+    min-width: 0;
+}
+
+.virastai-acr-sidebar {
+    flex: 1;
+    min-width: 280px;
+    position: sticky;
+    top: 40px;
+}
+
+/* Container */
+.virastai-acr-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #dcdcde;
+    padding: 30px;
+}
+
+.virastai-acr-card-sidebar {
+    padding: 20px;
+}
+
+/* Hide default WP Table lines to create a flow */
+.virastai-acr-container .form-table {
+    margin-top: 0;
+}
+
+.virastai-acr-container .form-table th {
+    font-weight: 600;
+    padding: 20px 10px 20px 0;
+    width: 220px;
+}
+
+.virastai-acr-container .form-table td {
+    padding: 15px 10px;
+}
+
+/* Modern Section Headers */
+.virastai-acr-container h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3338;
+    margin: 30px 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.virastai-acr-container h2:first-of-type {
+    margin-top: 0;
+}
+
+/* Inputs */
+.virastai-acr-input {
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 8px 12px;
+    box-shadow: none;
+    transition: border-color 0.2s;
+    height: 40px;
+}
+
+.virastai-acr-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.virastai-acr-textarea {
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 15px;
+    font-family: monospace;
+    background: #fcfcfc;
+}
+
+/* Toggle Switch */
+.virastai-acr-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+.virastai-acr-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.virastai-acr-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.virastai-acr-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .virastai-acr-slider {
+    background-color: #2271b1;
+}
+
+input:checked + .virastai-acr-slider:before {
+    transform: translateX(22px);
+}
+
+.virastai-acr-toggle-description {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+/* Post Type Grid */
+.virastai-acr-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.virastai-acr-checkbox-card {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f6f7f7;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.virastai-acr-checkbox-card:hover {
+    background: #fff;
+    border-color: #999;
+}
+
+.virastai-acr-checkbox-card.active {
+    background: #f0f6fc;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+.virastai-acr-checkbox-card input {
+    display: none;
+}
+
+.virastai-acr-pt-label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.virastai-acr-pt-name {
+    font-size: 11px;
+    color: #646970;
+    margin-top: 4px;
+}
+
+.virastai-acr-checkbox-card.active .virastai-acr-pt-name {
+    color: #2271b1;
+}
+
+/* Footer Button */
+.virastai-acr-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f1;
+    text-align: right;
+}
+
+.virastai-acr-footer-actions .button.button-large {
+    padding: 5px 30px;
+    font-size: 15px;
+}
+
+/* Statistics Sidebar */
+.virastai-acr-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 13px;
+}
+
+.virastai-acr-stat-row:last-of-type {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #646970;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.virastai-acr-stat-success {
+    color: #46b450;
+    font-weight: bold;
+}
+
+/* Progress Bar */
+.virastai-acr-progress-bar-bg {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.virastai-acr-progress-bar-fill {
+    height: 100%;
+    background: #2271b1;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.virastai-acr-progress-text {
+    font-size: 12px;
+    color: #646970;
+    text-align: right;
+    margin-top: 5px;
+}
+
+/* Utility Classes */
+.virastai-acr-mt-20 {
+    margin-top: 20px;
+}
+
+.virastai-acr-mb-10 {
+    margin-bottom: 10px;
+}
+
+.virastai-acr-mb-15 {
+    margin-bottom: 15px;
+}
+
+.virastai-acr-full-width {
+    width: 100%;
+}
+
+.virastai-acr-flex-row {
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}
+
+.virastai-acr-flex-item {
+    flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+    .virastai-acr-layout {
+        flex-direction: column;
+    }
+
+    .virastai-acr-sidebar {
+        width: 100%;
+        margin-top: 20px;
+    }
+}
