@@ -161,3 +161,12 @@ step 32:
 
 step 33:
 1- Added time limit extension calling set_time_limit(120) before remote API requests in class-virastai-acr-rewriter.php and class-virastai-acr-admin.php. This prevents PHP max_execution_time timeout errors (HTTP 500) during long-running model generations.
+
+step 34:
+1- Corrected the lowercase "p" typo in "WordPress" in both the main plugin file header and the readme file.
+2- Fixed the incomplete sentence in the readme description regarding background and manual execution.
+3- Updated description references to specify "Large Language Models" for clearer technical context.
+4- Removed the set_time_limit(120) call from the model fetching function in class-virastai-acr-admin.php to comply with guidelines prohibiting global execution limit modifications on standard settings pages.
+5- Added a Frequently Asked Questions entry in the readme file providing guidance on how to increase the PHP execution time limit to prevent timeout errors.
+6- Added a phpcs:ignore annotation to bypass the set_time_limit() discouraged warning in class-virastai-acr-rewriter.php.
+7- Shortened the readme and main plugin descriptions to 144 characters to prevent WordPress.org repository parser truncation warnings.

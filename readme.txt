@@ -7,13 +7,13 @@ Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Connects to AI to automatically rewrite, translate, or optimize your Wordpress posts, pages and all post types in the background or manually.
+Automatically rewrite, translate, and optimize WordPress posts, pages, and post types in the background or manually using Large Language Models.
 
 == Description ==
 
 Virastai Auto Content Rewrite With AI is a powerful automation tool designed to refresh your WordPress site's content using state-of-the-art Large Language Models. By connecting to the OpenRouter API, this plugin allows you to leverage models to bulk-rewrite titles and body content for your WooCommerce products, blog posts, or pages.
 
-Everything runs silently in the background using WordPress Cron, ensuring your server is never overloaded or you can manually.
+Everything runs silently in the background using WordPress Cron, ensuring your server is never overloaded, with an option to trigger rewrites manually.
 
 Key Features:
 
@@ -84,6 +84,14 @@ Yes! If you enable "Preserve Images" in the settings, the plugin extracts all <i
 = Can I customize the instructions? =
 
 Absolutely. You can set a "Base Context" (sent with every request) and specific instructions for both Titles and Body content. Placeholders like `{post_title}` and `{post_content}` are available.
+
+= What if generations time out? =
+
+If your server times out during long-running generations, you can increase the PHP execution time limit on your server:
+
+1. In your `php.ini` file, set `max_execution_time = 120`.
+2. In Apache servers, add `php_value max_execution_time 120` to your `.htaccess` file.
+3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
 

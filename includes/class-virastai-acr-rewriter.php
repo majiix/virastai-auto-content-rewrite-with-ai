@@ -395,6 +395,7 @@ class Virastai_Acr_Rewriter {
 		);
 
 		if ( function_exists( 'set_time_limit' ) ) {
+			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Extended execution time is required for API requests.
 			@set_time_limit( 120 );
 		}
 
