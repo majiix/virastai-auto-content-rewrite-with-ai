@@ -359,6 +359,7 @@ class Virastai_Acr_Metabox {
 		// Clear completion history flags so statistics are updated/reset (excluding excerpt statistics).
 		delete_post_meta( $post_id, '_virastai_acr_title_generated' );
 		delete_post_meta( $post_id, '_virastai_acr_content_generated' );
+		delete_post_meta( $post_id, '_virastai_acr_retry_count' );
 
 		wp_send_json_success();
 	}

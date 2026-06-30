@@ -60,6 +60,7 @@ delete_metadata( 'post', 0, '_virastai_acr_excerpt_generated', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true );
+delete_metadata( 'post', 0, '_virastai_acr_retry_count', '', true );
 
 // 4. Delete Model Cache Transient.
 delete_transient( 'virastai_acr_models_cache' );

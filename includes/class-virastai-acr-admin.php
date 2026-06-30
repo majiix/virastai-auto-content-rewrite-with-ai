@@ -181,6 +181,7 @@ class Virastai_Acr_Admin {
 				$res4 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_title', '', true );
 				$res5 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
 				$res6 = delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true );
+				delete_metadata( 'post', 0, '_virastai_acr_retry_count', '', true );
 
 				if ( $res1 || $res2 || $res3 ) {
 					$message = __( 'Complete reset! Content, Title, and Excerpt progress markers removed. Sandbox data cleared.', 'virastai-auto-content-rewrite-with-ai' );

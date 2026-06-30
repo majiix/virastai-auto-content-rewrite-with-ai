@@ -170,3 +170,12 @@ step 34:
 5- Added a Frequently Asked Questions entry in the readme file providing guidance on how to increase the PHP execution time limit to prevent timeout errors.
 6- Added a phpcs:ignore annotation to bypass the set_time_limit() discouraged warning in class-virastai-acr-rewriter.php.
 7- Shortened the readme and main plugin descriptions to 144 characters to prevent WordPress.org repository parser truncation warnings.
+
+step 35:
+1- Optimized performance by removing the table existence check query from the plugins_loaded initialization hook in class-virastai-acr-logger.php.
+2- Added API key configuration validation in the background cron job to exit early if credentials are missing, preventing log database spam.
+3- Implemented batch runtime tracking and timeout safeguards in the cron loop to abort processing before nearing PHP max_execution_time limits.
+4- Implemented a post-fetching fallback in the rewriter engine and retry counter metadata mechanism, marking failing posts as "failed" after 3 attempts to prevent infinite retry loops.
+5- Implemented metadata skipping status for empty posts and added a post save callback hook to clear skipped or failed statuses when content is updated.
+6- Ensured retry counts are cleaned up on uninstall, progress reset, or manual sandbox clearing.
+

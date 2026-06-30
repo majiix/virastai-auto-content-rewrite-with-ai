@@ -4,6 +4,10 @@
 - Automatically rewrites WooCommerce product data, general post types, and excerpts.
 - Background execution using WordPress Cron to process items in batch.
 - Randomized batch query sorting to prevent background processes from sticking on empty posts.
+- Aborts background executions cleanly and logs nothing if the OpenRouter API Key configuration is empty.
+- Limits background processing batch runtimes to prevent script timeouts and HTTP 500 crashes on slow connections.
+- Implements skipped and failed post metadata flags to prevent infinite background request loops on empty posts or persistently failing API calls.
+- Monitors post updates via `save_post` hooks to automatically reset skipped and failed flags when content is updated.
 
 ## Text Generation and Formatting
 - Sends custom templates (Base Context, Title Instruction, Content Instruction, Excerpt Instruction) to OpenRouter.
@@ -46,6 +50,7 @@
 
 ## Exclusive Database Logging
 - Writes all system events, errors, API requests, and API responses directly to a dedicated database table (wp_virastai_acr_logs).
+- Optimizes logger performance by running table check/creation logic on plugin activation instead of every request.
 - Supports automatic token masking for security when logging authorization headers.
 - Displays logs in a paginated, responsive HTML table structure with dynamic database queries limit of 20 logs per page to minimize server load.
 - Displays details of long log messages in a responsive, glassmorphic modal overlay instead of inline toggles.

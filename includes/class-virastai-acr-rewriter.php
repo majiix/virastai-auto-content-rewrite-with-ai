@@ -23,7 +23,14 @@ class Virastai_Acr_Rewriter {
 	 * @param WP_Post $post       Post object.
 	 * @return bool True if at least one update occurred, false otherwise.
 	 */
-	public function virastai_acr_generate_content( $product_id, $post, $target_type = '' ) {
+	public function virastai_acr_generate_content( $product_id, $post = null, $target_type = '' ) {
+		if ( ! $post ) {
+			$post = get_post( $product_id );
+		}
+		if ( ! $post ) {
+			return false;
+		}
+
 		// --- 1. Load Settings ---
 		$enable_title_rewrite     = get_option( 'virastai_acr_enable_title_rewrite', 0 );
 		$enable_content_rewrite   = get_option( 'virastai_acr_enable_content_rewrite', 1 );
@@ -88,18 +95,21 @@ class Virastai_Acr_Rewriter {
 		// Validation for Title.
 		if ( $process_title && $skip_incomplete_title && empty( trim( $current_content ) ) ) {
 			$process_title = false;
+			update_post_meta( $product_id, '_virastai_acr_title_generated', 'skipped' );
 			$this->log( "Skipping Title for ID $product_id: Content is empty." );
 		}
 
 		// Validation for Content.
 		if ( $process_content && $skip_incomplete_content && empty( trim( $current_content ) ) ) {
 			$process_content = false;
+			update_post_meta( $product_id, '_virastai_acr_content_generated', 'skipped' );
 			$this->log( "Skipping Content for ID $product_id: Content is empty." );
 		}
 
 		// Validation for Excerpt.
 		if ( $process_excerpt && $skip_incomplete_excerpt && empty( trim( $current_content ) ) ) {
 			$process_excerpt = false;
+			update_post_meta( $product_id, '_virastai_acr_excerpt_generated', 'skipped' );
 			$this->log( "Skipping Excerpt for ID $product_id: Content is empty." );
 		}
 
@@ -278,19 +288,45 @@ class Virastai_Acr_Rewriter {
 		}
 
 		// --- 5. Final Update ---
-		if ( $has_changes && ! $sandbox_mode_enabled ) {
-			if ( count( $update_args ) > 1 ) {
-				$result = wp_update_post( $update_args );
+		if ( $has_changes ) {
+			delete_post_meta( $product_id, '_virastai_acr_retry_count' );
+			if ( ! $sandbox_mode_enabled ) {
+				if ( count( $update_args ) > 1 ) {
+					$result = wp_update_post( $update_args );
 
-				if ( is_wp_error( $result ) ) {
-					$this->log( "Error updating post $product_id: " . $result->get_error_message(), 'error' );
-					return false;
+					if ( is_wp_error( $result ) ) {
+						$this->log( "Error updating post $product_id: " . $result->get_error_message(), 'error' );
+						return false;
+					}
 				}
+				return true;
 			}
-			return true;
+			return $has_changes; // Return true if sandbox meta was updated.
 		}
 
-		return $has_changes; // Return true if sandbox meta was updated.
+		// Handle Failures & Retries.
+		if ( $process_count > 0 && ! $has_changes ) {
+			$retry_count = (int) get_post_meta( $product_id, '_virastai_acr_retry_count', true );
+			$retry_count++;
+			if ( $retry_count >= 3 ) {
+				if ( $process_title ) {
+					update_post_meta( $product_id, '_virastai_acr_title_generated', 'failed' );
+				}
+				if ( $process_content ) {
+					update_post_meta( $product_id, '_virastai_acr_content_generated', 'failed' );
+				}
+				if ( $process_excerpt ) {
+					update_post_meta( $product_id, '_virastai_acr_excerpt_generated', 'failed' );
+				}
+				delete_post_meta( $product_id, '_virastai_acr_retry_count' );
+				$this->log( "Permanently failed processing for ID $product_id after 3 attempts.", 'error' );
+			} else {
+				update_post_meta( $product_id, '_virastai_acr_retry_count', $retry_count );
+				$this->log( "Failed processing for ID $product_id. Attempt $retry_count of 3.", 'warning' );
+			}
+		}
+
+		return false;
 	}
 
 	/**

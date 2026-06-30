@@ -110,6 +110,11 @@ class Virastai_Acr_Cron {
 			return;
 		}
 
+		$api_key = get_option( 'virastai_acr_openrouter_api_key', '' );
+		if ( empty( trim( $api_key ) ) ) {
+			return;
+		}
+
 		$allowed_post_types    = get_option( 'virastai_acr_allowed_post_types', array( 'product' ) );
 		$allowed_post_statuses = get_option( 'virastai_acr_allowed_post_statuses', array( 'publish' ) );
 		$batch_size            = (int) get_option( 'virastai_acr_cron_batch_size', 5 );
@@ -170,7 +175,24 @@ class Virastai_Acr_Cron {
 			return;
 		}
 
+		$start_time = microtime( true );
+		$max_time   = (int) ini_get( 'max_execution_time' );
+		if ( $max_time <= 0 ) {
+			$max_time = 30;
+		}
+		$time_limit = $max_time - 5;
+		if ( $time_limit < 10 ) {
+			$time_limit = 10;
+		}
+
 		foreach ( $posts as $post ) {
+			if ( ( microtime( true ) - $start_time ) >= $time_limit ) {
+				if ( class_exists( 'Virastai_Acr_Logger' ) ) {
+					Virastai_Acr_Logger::log( 'info', 'Cron batch stopped early to prevent execution timeout.' );
+				}
+				break;
+			}
+
 			try {
 				$this->rewriter->virastai_acr_generate_content( $post->ID, $post );
 			} catch ( Exception $e ) {

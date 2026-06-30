@@ -25,8 +25,6 @@ class Virastai_Acr_Logger {
 	 * Initialize DB table and daily cleanup scheduling.
 	 */
 	public static function init() {
-		self::create_table();
-
 		// Schedule daily cleanup.
 		if ( ! wp_next_scheduled( 'virastai_acr_daily_cleanup_event' ) ) {
 			wp_schedule_event( time(), 'daily', 'virastai_acr_daily_cleanup_event' );

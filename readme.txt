@@ -3,7 +3,7 @@ Contributors: micromax2
 Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,13 @@ If your server times out during long-running generations, you can increase the P
 3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
+
+= 1.5.1 =
+* Fixed execution timeout issue by adding time-elapsed monitoring and safety thresholds within batch processing cron loop.
+* Optimized plugin initialization performance by removing database check SHOW TABLES query from request-level hooks.
+* Added validation in cron job to abort early if API key configuration is missing, avoiding redundant database error log entries.
+* Added intermediate skipped and failed metadata flags to prevent infinite background request loops on empty posts or persistently failing API calls.
+* Hooked into save_post events to clear skipped and failed flags to support background reprocessing of edited posts.
 
 = 1.5.0 =
 * Rebranded the plugin name to Virastai Auto Content Rewrite With AI.
