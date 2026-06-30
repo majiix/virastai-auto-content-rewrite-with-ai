@@ -1,43 +1,41 @@
-# Specification: Resilient Background Processing and Error Prevention
+# Specification: Resilient Background Processing and Design/Delight Overhaul
 
 ## 1. Overview
-This specification details the robustness, error prevention, and performance enhancement requirements for the Virastai Auto Content Rewrite With AI WordPress plugin. The main goal is to ensure the plugin operates without creating resource bottlenecks, database bloat, PHP timeouts, or HTTP 500 errors on the site.
+This specification details the robustness, error prevention, performance enhancement, and high-fidelity user interface overhaul for the Virastai Auto Content Rewrite With AI WordPress plugin. It combines background resilience with a premium, modern design language and micro-interaction delight factors.
 
 ## 2. User Scenarios
-- **Scenario A (Missing configuration)**: A site administrator activates the plugin but does not supply an API key. Background cron jobs should exit silently and cleanly without generating database error logs or repeating API connection checks.
-- **Scenario B (API Downtime or Key Expiry)**: The site runs background rewrites, but OpenRouter returns persistent error codes or the network is down. The system must prevent infinite API retries on the same posts during subsequent cron execution batches.
-- **Scenario C (Unprocessed/Empty Posts)**: Posts that are empty or skipped due to "Skip Incomplete Posts" must not be repeatedly processed in every cron run. The system must mark them as skipped/handled, but dynamically clear this status if they are updated with actual content.
-- **Scenario D (Timeouts on Heavy Batches)**: A cron run processes a batch of posts. Due to slow API responses, the cumulative execution time approaches the PHP server's maximum execution limit. The system must detect this and break the batch loop cleanly before a PHP execution timeout (HTTP 500) occurs.
-- **Scenario E (System Overhead)**: On every public frontend or backend request, the plugin must not execute table existence checking queries or register redundant schedule events, ensuring zero performance regression.
+- **Scenario A (Missing configuration)**: A site administrator activates the plugin but does not supply an API key. Background cron jobs should exit silently and cleanly. The admin dashboard displays a warm, encouraging setup prompt rather than plain text.
+- **Scenario B (API Downtime or Key Expiry)**: The system prevents infinite API retries on the same posts. Error states are softened with warm, clear guidance.
+- **Scenario C (Tab & Form Interaction)**: An administrator configures the plugin. The tabbed settings panel switches with fluid fade-in animations, text inputs glow on focus, toggle switches feel springy, and allowed roles/post types are selected via sleek grid cards that lift on hover and pulse on state changes.
+- **Scenario D (Sandbox Review & Shimmering Loaders)**: When editing a post, clicking "Generate All" runs a background request. Shimmering gradient skeleton loaders occupy the preview slots, and fields animate into view when ready. Applying generations triggers a clean reload transition, and copy actions show inline green checkmarks.
+- **Scenario E (System Log Examination)**: The site admin views log details. A glassmorphic modal animates open with backdrop blur and elastic scale dynamics. The JSON payloads inside are color-coded and copyable with an animated confirmation.
 
 ## 3. Requirements
 
 ### 3.1 Verification of API Config
-- The cron runner must verify that the OpenRouter API Key is non-empty before initiating any query or loop. If empty, the cron process must exit immediately.
+- The cron runner must verify that the OpenRouter API Key is non-empty before initiating any query or loop.
 
 ### 3.2 Resilience and Fault Tolerance (Retry Limiter)
 - Tracks failed API/decoding attempts on a per-post basis using a dedicated metadata field.
-- Limits retries to 3 attempts. Upon reaching 3 failed attempts, the post's status is marked as `'failed'` for the requested fields to exclude it from subsequent cron runs.
-- Reset the failure count when:
-  - The post is saved/updated by the user.
-  - The sandbox metadata is cleared via the metabox or reset options.
-  - A manual generation is successful.
+- Limits retries to 3 attempts. Upon reaching 3 failed attempts, the post's status is marked as `'failed'` to exclude it from background cron runs.
 
 ### 3.3 Safe Handling of Skipped Empty Posts
-- If a post is skipped because it is empty (and "Skip Incomplete Posts" option is enabled), it must be marked as `'skipped'` on the corresponding fields.
-- When a post is saved and its content is updated to a non-empty string, any `'skipped'` or `'failed'` flags must be automatically removed, enabling background reprocessing.
+- If a post is skipped because it is empty, it is marked as `'skipped'`.
+- Saving/updating post content automatically resets the `'skipped'` or `'failed'` flags.
 
 ### 3.4 Runtime Timeout Safeguard
-- During batch cron processing, the execution time must be monitored.
-- Compare elapsed execution time against the server's `max_execution_time` (with a default fallback if unset).
-- If the elapsed time is within a 5-second safety threshold of the maximum execution time, stop the batch processing loop and log an informational message.
+- Monitor execution time during cron processing and break the batch loop 5 seconds before PHP `max_execution_time`.
 
-### 3.5 Database Performance Optimization
-- Remove table existence checks from request-level initialization. The table must be created once on plugin activation.
+### 3.5 High-Fidelity Design and Delight System
+- **Signature UI Elements**: Re-design the old-school WordPress tab navigation into a modern, pill-shaped control panel using premium slate/indigo colors. Implement a sidebar widget with gradient progress meters and hover-responsive reset trash icons.
+- **Spring Toggles & Cards**: Switch sliders should bounce slightly on state transition. Checkbox grid cards should lift on hover (`translateY(-2px)`) with a soft drop shadow, displaying an active state with an indigo outline and subtle scale pulse.
+- **Shimmering Skeleton Loader**: Replace the basic pulse loader with a high-performance linear gradient sweep that shimmers across placeholders.
+- **Glassmorphic Logs Modal**: Modal panels must slide/scale open using a custom cubic-bezier spring curve (`cubic-bezier(0.34, 1.56, 0.64, 1)`) with backdrop blur (`backdrop-filter: blur(8px)`).
+- **Copy Confirms**: Copy-to-clipboard buttons in the metabox and log modals must toggle to a green checkmark icon with a springy transition, then revert after 2 seconds.
 
 ## 4. Success Criteria
-- No PHP warnings, notices, or fatal errors during cron runs.
-- Zero infinite retry loops on failing API calls or empty posts.
-- Zero database logs spamming under error/missing-key conditions.
-- No HTTP 500 execution timeouts during batch processes on slow API connections.
+- Zero PHP errors, warnings, or notices.
+- A cohesive, modern, and premium design style that aligns with the latest 2026 guidelines (no plain system red/blue/green defaults, custom curated HSL tones, smooth transition curves).
+- Delightful micro-interactions (hover, active, copy, tabs, toggle) functioning smoothly without impacting page rendering speed or causing visual clutter.
 - Verification checks (e.g. `php -l`) pass with no issues.
+

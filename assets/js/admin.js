@@ -402,7 +402,7 @@ jQuery(document).ready(function ($) {
     modalCopyBtn.on('click', function(e) {
         e.preventDefault();
         navigator.clipboard.writeText(currentModalRawMessage).then(function() {
-            modalCopyBtn.html('<span class="dashicons dashicons-yes" style="color: #46b450;"></span> Copied!');
+            modalCopyBtn.html('<span class="dashicons dashicons-yes" style="color: #10b981;"></span> Copied!');
             setTimeout(function() {
                 modalCopyBtn.html('<span class="dashicons dashicons-admin-page"></span> Copy Content');
             }, 2000);
@@ -447,7 +447,7 @@ jQuery(document).ready(function ($) {
         const originalHtml = btn.html();
 
         navigator.clipboard.writeText(logsText).then(function() {
-            btn.html('<span class="dashicons dashicons-yes" style="color: #46b450;"></span> Copied!');
+            btn.html('<span class="dashicons dashicons-yes" style="color: #10b981;"></span> Copied!');
             setTimeout(function() {
                 btn.html(originalHtml);
             }, 2000);

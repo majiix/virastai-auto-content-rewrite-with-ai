@@ -3,7 +3,7 @@ Contributors: micromax2
 Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.0
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,12 @@ If your server times out during long-running generations, you can increase the P
 3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
+
+= 1.5.2 =
+* Overhauled settings panel UI using slate/indigo HSL colors and pill-shaped tab navigation.
+* Implemented elastic spring transitions for form focus, toggle switches, and checkbox cards.
+* Redesigned system logs details popup as a glassmorphic modal with backdrop blur and code block theme.
+* Upgraded skeleton loading animation to a high-performance linear gradient sweep shimmer.
 
 = 1.5.1 =
 * Fixed execution timeout issue by adding time-elapsed monitoring and safety thresholds within batch processing cron loop.

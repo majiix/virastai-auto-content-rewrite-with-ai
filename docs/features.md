@@ -39,7 +39,7 @@
 - Restricts visibility, access, asset loading, and generation AJAX actions for the Sandbox metabox based on configured Post Types, Allowed User Roles, and Post Statuses options.
 
 ## User Interface Refinements
-- Implements a modern tabbed layout for settings sections (General, Automation, Content, Title, Help).
+- Implements a modern, custom pill-shaped tabbed layout (General, Automation, Content, Title, Logs, Help) with smooth transitions, removing stock WordPress tab aesthetics.
 - Includes a dedicated Help tab providing a guide on OpenRouter API Key setup, model ID selection, background cron automation details, and sandbox review mode workflow.
 - Masked API Key text fields with custom show/hide toggles.
 - Dynamic fetching and caching (1 hour) of all OpenRouter model IDs, rendered as a select option.
@@ -47,17 +47,20 @@
 - Persistent tab selections matching URL hashes and referrer query parameters, so reloading the page or clicking "Save Settings" restores the previously open tab automatically.
 - Renders Allowed User Roles, Post Types, Post Statuses, and Enable Sandbox Mode settings under the "General" configuration tab.
 - Features a perfectly vertically middle-aligned eye visibility toggle button for the API key input.
+- Implements premium springy interaction transformations (`cubic-bezier(0.34, 1.56, 0.64, 1)`) for form focus states, switch toggles, and post type selection cards.
+- Features an elegant HSL slate sidebar with an indigo-to-purple gradient progress bar utilizing custom spring-width transitions.
 
 ## Exclusive Database Logging
 - Writes all system events, errors, API requests, and API responses directly to a dedicated database table (wp_virastai_acr_logs).
 - Optimizes logger performance by running table check/creation logic on plugin activation instead of every request.
 - Supports automatic token masking for security when logging authorization headers.
 - Displays logs in a paginated, responsive HTML table structure with dynamic database queries limit of 20 logs per page to minimize server load.
-- Displays details of long log messages in a responsive, glassmorphic modal overlay instead of inline toggles.
-- Extracts, prettifies, and color-code syntax highlights JSON block components inside the log details modal (identifying keys, strings, numbers, booleans, and null values).
+- Displays details of log entries inside a premium glassmorphic modal overlay containing backdrop filter blur (`backdrop-filter: blur(12px)`) and spring pop-in dynamics.
+- Renders log contents in a high-contrast dark panel (Consolas block with inner shadow), parsing, prettifying, and color-coding JSON syntax segments for high readability.
 - Features a dedicated clipboard copy button inside the modal to easily copy a specific log's content, in addition to the page-wide clipboard copy, AJAX refresh, and secure clear actions.
 - Includes a retention cleanup daemon that purges records older than X days periodically.
 
 ## Data Lifecycle and Uninstallation
 - Adds a danger-styled "Delete Data on Uninstall" option under the General configuration tab to permanently delete all logs, registered options, cache transients, and sandbox meta values upon deleting the plugin.
 - Integrates a conditional data cleanup hook in uninstall.php that preserves data by default, executing cleanup queries only if the danger settings checkbox has been explicitly checked.
+

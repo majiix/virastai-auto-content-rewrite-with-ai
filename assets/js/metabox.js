@@ -128,35 +128,35 @@ jQuery(document).ready(function ($) {
                     // Update fields and show/hide their respective groups based on presence of data
                     if (data.title) {
                         $('#virastai_acr_sandbox_title_field').val(data.title);
-                        container.find('.virastai-acr-title-group').show();
+                        container.find('.virastai-acr-title-group').slideDown(300);
                     } else {
-                        container.find('.virastai-acr-title-group').hide();
+                        container.find('.virastai-acr-title-group').slideUp(300);
                     }
 
                     if (data.content) {
                         $('#virastai_acr_sandbox_content_field').val(data.content);
-                        container.find('.virastai-acr-content-group').show();
+                        container.find('.virastai-acr-content-group').slideDown(300);
                     } else {
-                        container.find('.virastai-acr-content-group').hide();
+                        container.find('.virastai-acr-content-group').slideUp(300);
                     }
 
                     if (data.excerpt) {
                         $('#virastai_acr_sandbox_excerpt_field').val(data.excerpt);
-                        container.find('.virastai-acr-excerpt-group').show();
+                        container.find('.virastai-acr-excerpt-group').slideDown(300);
                     } else {
-                        container.find('.virastai-acr-excerpt-group').hide();
+                        container.find('.virastai-acr-excerpt-group').slideUp(300);
                     }
 
                     // If absolutely nothing is generated, fall back to empty layout
                     if (!data.title && !data.content && !data.excerpt) {
-                        container.find('.virastai-acr-sandbox-fields').hide();
-                        container.find('.virastai-acr-empty-msg').show();
-                        container.find('.virastai-acr-clear-btn').hide();
-                        container.find('.virastai-acr-metabox-apply-container').hide();
+                        container.find('.virastai-acr-sandbox-fields').slideUp(300);
+                        container.find('.virastai-acr-empty-msg').fadeIn(300);
+                        container.find('.virastai-acr-clear-btn').fadeOut(300);
+                        container.find('.virastai-acr-metabox-apply-container').slideUp(300);
                     } else {
                         // Only show apply button container and clear button after a successful process
-                        container.find('.virastai-acr-metabox-apply-container').show();
-                        container.find('.virastai-acr-clear-btn').show();
+                        container.find('.virastai-acr-metabox-apply-container').slideDown(300);
+                        container.find('.virastai-acr-clear-btn').fadeIn(300);
                     }
                 } else {
                     alert('Error: ' + response.data);

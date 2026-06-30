@@ -1,86 +1,56 @@
-# Technical Implementation Plan: Resilient Background Processing and Error Prevention
+# Technical Implementation Plan: Resilient Background Processing and Design/Delight Overhaul
 
-This document describes the technical details for modifying the plugin's cron, database, and logic files to prevent timeouts, 500 errors, and database bloat.
+This document details the technical modifications for overhauling the plugin's CSS/JS assets and HTML structures to deliver a modern, premium light-mode experience with HSL-tailored slate/indigo palettes, gradient accents, and spring-like micro-animations.
 
-## System Architecture Updates
-1. **Request Lifecycle**: Remove the database check `SHOW TABLES` from `plugins_loaded` hook. The logger table must only be checked and created during plugin activation.
-2. **Cron Processing**:
-   - Add early exit checking for empty settings config.
-   - Limit execution time using standard PHP time functions to break out of processing loops before timeouts occur.
-3. **Skipping / Failure Lifecycle**:
-   - Set intermediate metadata states: `'skipped'` for posts that do not meet processing conditions, and `'failed'` for posts that persistently fail API connectivity or parsing.
-   - Clear these flags during `save_post` hooks when the posts are edited.
+## 1. System Architecture Updates
+1. **Settings Navigation Overhaul**: Redesign the tab headers in `includes/class-virastai-acr-admin.php` and `assets/css/admin.css` to use a modern, custom pill-shaped tab system instead of the stock WordPress `.nav-tab` styling.
+2. **Dynamic UI Delights**:
+   - Add spring-like hover transforms and active states to settings forms, switches, buttons, and grid checkboxes.
+   - Upgrade the basic skeleton loader in `assets/css/metabox.css` to a shimmering linear gradient sweep.
+   - Animate transition states (e.g. settings saved confirmation notices, log details modal pop-ins) using custom CSS easing curves.
+3. **Robust Backend Integration**: Keep retry limits, skipped states, timeout monitoring, and logging optimization fully functional while updating visual styles.
 
-## Component Structure & Code Modifications
+## 2. Asset Modifications & Design Palette
 
-### 1. `virastai-auto-content-rewrite-with-ai.php`
-Register the post save hook to clear skipped or failed statuses when content is added:
-```php
-add_action( 'save_post', 'virastai_acr_clear_skipped_status', 10, 2 );
+### Curated Color Tokens (HSL Slate/Indigo/Teal/Pink)
+- **Primary Indigo Accent**: `hsla(238, 80%, 58%, 1)` -> `#4f46e5`
+- **Secondary Slate Slate**: `hsla(215, 15%, 45%, 1)` -> `#64748b`
+- **Success Emerald/Teal**: `hsla(162, 75%, 42%, 1)` -> `#10b981`
+- **Danger Rose/Pink**: `hsla(340, 82%, 52%, 1)` -> `#ec4899`
+- **Backgrounds**: Slate-grey tints `hsla(210, 40%, 98%, 1)` (`#f8fafc`) and transparent overlays.
 
-function virastai_acr_clear_skipped_status( $post_id, $post ) {
-	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
-		return;
-	}
-	if ( empty( trim( $post->post_content ) ) ) {
-		return;
-	}
-	$keys = array(
-		'_virastai_acr_title_generated',
-		'_virastai_acr_content_generated',
-		'_virastai_acr_excerpt_generated',
-		'_virastai_acr_retry_count',
-	);
-	foreach ( $keys as $key ) {
-		$val = get_post_meta( $post_id, $key, true );
-		if ( 'skipped' === $val || 'failed' === $val ) {
-			delete_post_meta( $post_id, $key );
-		}
-	}
-}
-```
+---
 
-### 2. `includes/class-virastai-acr-logger.php`
-Modify the `init()` method:
-```php
-	public static function init() {
-		// Schedule daily cleanup.
-		if ( ! wp_next_scheduled( 'virastai_acr_daily_cleanup_event' ) ) {
-			wp_schedule_event( time(), 'daily', 'virastai_acr_daily_cleanup_event' );
-		}
-		add_action( 'virastai_acr_daily_cleanup_event', array( __CLASS__, 'clean_old_logs' ) );
-	}
-```
+### Component Styling Changes
 
-### 3. `includes/class-virastai-acr-cron.php`
-Update `virastai_acr_run_batch_process()`:
-```php
-		$api_key = get_option( 'virastai_acr_openrouter_api_key', '' );
-		if ( empty( trim( $api_key ) ) ) {
-			return; // Avoid runs and logs bloat if credentials are unset.
-		}
-```
-Add loop timeout safety check using:
-```php
-		$start_time = microtime( true );
-		$max_time   = (int) ini_get( 'max_execution_time' );
-		if ( $max_time <= 0 ) {
-			$max_time = 30;
-		}
-		$time_limit = $max_time - 5;
-		if ( $time_limit < 10 ) {
-			$time_limit = 10;
-		}
-```
+#### 1. `assets/css/admin.css`
+- **Main Container**: Increase border-radius to `12px` and apply a soft, elegant box-shadow (`0 4px 20px -2px rgba(148, 163, 184, 0.12), 0 2px 8px -1px rgba(148, 163, 184, 0.08)`).
+- **Modern Tab Bar**: Override `.nav-tab-wrapper` and `.nav-tab`. Eliminate default borders, borders between tabs, and white backgrounds. Render as a unified card track with pill-shaped links that highlight with a gradient backdrop and slide/scale active states.
+- **Form Switch Toggles**: Refine toggle sliders with custom scale transitions and spring easing (`cubic-bezier(0.34, 1.56, 0.64, 1)`).
+- **Checkbox Grid Cards**: Add a hover lift (`transform: translateY(-3px)`) and a transition to scale the checkbox card when selected. Add a subtle radial gradient hover reflection.
+- **Floating Sidebar widget**: Revamp the statistics sidebar widget with a smooth gradient progress bar (indigo-to-violet) and animated reset buttons (rotation + scale on hover).
+- **Logs Viewer details modal**: Modernize with `backdrop-filter: blur(12px)` overlay, elastic scale animation, Consolas code panel with subtle inner glow, and animated copy status actions.
 
-### 4. `includes/class-virastai-acr-rewriter.php`
-- Handle `$post` query fallback inside `virastai_acr_generate_content()`.
-- Record `'skipped'` if `empty( trim( $current_content ) )` is true.
-- Record retry counts on failure; transition to `'failed'` status if attempt limit (3) is exceeded.
+#### 2. `assets/css/metabox.css`
+- **Metabox Container**: Style the sandbox panel to align with the new card aesthetic.
+- **Regenerate & Action Buttons**: Implement primary (emerald-teal), secondary (slate), and danger (rose) gradient buttons with a subtle springy press transition.
+- **Shimmering Skeleton Loader**: Define keyframe `@keyframes virastaiShimmer` that sweeps a linear gradient highlighting across the skeleton lines at a `1.5s` loop:
+  ```css
+  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: virastaiShimmer 1.5s infinite linear;
+  ```
+- **Copy Status Indication**: Add a green checkmark check animation when copy succeeds.
 
-### 5. Cleanup hooks in `class-virastai-acr-admin.php`, `class-virastai-acr-metabox.php`, and `uninstall.php`
-- Clean `_virastai_acr_retry_count` meta key on uninstall, progress reset, or manual sandbox clearing.
+---
 
-## Verification
-- Syntactic check of all PHP files.
-- Manual verification of cron logic and execution time limiting.
+#### 3. `assets/js/admin.js` & `assets/js/metabox.js`
+- **Transitions**: Handle transition triggers for modal opening (adding/removing class `.active` with appropriate JS timeouts).
+- **Copy Success Actions**: Enhance the navigator clipboard triggers to dynamically adjust inner HTML with CSS-animated success checkboxes.
+
+---
+
+## 3. Verification Plan
+- **PHP Syntax & WordPress Standards Check**: Run `php -l` on all PHP files.
+- **Visual Inspections**: Verify responsiveness, tab transitions, hover elevations, modal bounce animations, and copy button state toggles.
+

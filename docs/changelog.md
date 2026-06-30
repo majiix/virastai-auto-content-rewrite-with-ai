@@ -179,3 +179,15 @@ step 35:
 5- Implemented metadata skipping status for empty posts and added a post save callback hook to clear skipped or failed statuses when content is updated.
 6- Ensured retry counts are cleaned up on uninstall, progress reset, or manual sandbox clearing.
 
+step 36:
+1- Overhauled the settings tabbed navigation, replacing old-school WordPress tabs with sleek, HSL pill-shaped control layouts in admin.css.
+2- Redesigned card layouts and container border curves to feature modern 12px rounded boundaries and elegant Slate elevations.
+3- Programmed premium spring transition dynamics (using custom cubic-bezier curves) for inputs, select dropdowns, switch toggles, and grid cards.
+4- Upgraded the statistics sidebar widget with a modern progress bar containing indigo-to-purple HSL gradients and spring width transitions.
+5- Overhauled the System Logs detail viewer to use glassmorphic backdrops, backdrop filters (blur), and smooth scale bounce dynamics.
+6- Configured syntax highlighting colors for code blocks to optimize readability on high-contrast dark panels.
+7- Upgraded the Sandbox review metabox to feature gradient buttons (indigo for Generate All, emerald for Apply, rose for Clear) and slide/fade state transitions.
+8- Swapped basic pulse loading templates with a high-performance linear gradient sweep shimmer animation for skeleton loaders.
+9- Configured clip buttons next to fields to trigger visual green checkmark feedback on success.
+
+
