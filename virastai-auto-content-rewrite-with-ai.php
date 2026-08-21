@@ -3,7 +3,7 @@
  * Plugin Name: Virastai Auto Content Rewrite With AI
  * Plugin URI:  https://wordpress.org/plugins/virastai-auto-content-rewrite-with-ai
  * Description: Automatically rewrite, translate, and optimize WordPress posts, pages, and post types in the background or manually using Large Language Models.
- * Version:     1.5.2
+ * Version:     1.5.3
  * Author:      micromax
  * Text Domain: virastai-auto-content-rewrite-with-ai
  * Domain Path: /languages
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants with 'VIRASTAI_ACR_' prefix.
-define( 'VIRASTAI_ACR_VERSION', '1.5.2' );
+define( 'VIRASTAI_ACR_VERSION', '1.5.3' );
 define( 'VIRASTAI_ACR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'VIRASTAI_ACR_URL', plugin_dir_url( __FILE__ ) );
 

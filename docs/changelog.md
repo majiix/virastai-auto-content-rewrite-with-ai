@@ -190,4 +190,8 @@ step 36:
 8- Swapped basic pulse loading templates with a high-performance linear gradient sweep shimmer animation for skeleton loaders.
 9- Configured clip buttons next to fields to trigger visual green checkmark feedback on success.
 
+step 37:
+1- Bumped plugin version to 1.5.3.
+2- Verified compatibility with WordPress 7.1.0 and updated "Tested up to" to 7.1.
+
 
