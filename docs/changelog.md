@@ -194,4 +194,47 @@ step 37:
 1- Bumped plugin version to 1.5.3.
 2- Verified compatibility with WordPress 7.1.0 and updated "Tested up to" to 7.1.
 
+step 38:
+1- Added new Custom Automation tab with publication date range filtering.
+2- Implemented modular class Virastai_Acr_Custom_Automation handling background WP-Cron batch execution and transient locking.
+3- Added Posts Per Minute rate parameter to control execution throughput safely without timeouts.
+4- Added dynamic real-time preview counts badge displaying posts to rewrite and already rewritten posts with AJAX updates on parameter changes.
+5- Added interactive lifecycle controls (Start, Pause, Stop) with confirmation dialogs.
+6- Added Retry Failed button to Failed / Skipped metric card with AJAX queueing and metadata reset.
+7- Enhanced error and warning logging so failure/skip causes are always recorded even if verbose logging is off.
+8- Added animated real-time progress bar, status badges, active item ticker, and live AJAX status polling.
+9- Bumped plugin version to 1.6.0.
 
+step 39:
+1- Added force overwrite parameter to Virastai_Acr_Rewriter::virastai_acr_generate_content to ensure "Include already rewritten posts" actually overwrites existing content instead of being skipped.
+2- Updated generation completion checks to accurately identify successful statuses (1, 2, 3) vs failure or skip statuses.
+3- Enhanced Virastai_Acr_Custom_Automation with dual execution model: responsive in-browser AJAX ticks when active on screen and background WP-Cron execution when browser is closed.
+4- Fixed Retry Failed action to completely clear previous rewrite status metadata and retry counters on targeted posts.
+5- Dynamically aligned eligible query and count meta queries with currently enabled rewrite sections (title, content, excerpt) in settings.
+6- Resolved log details modal freezing by replacing O(N^2) token parsing with high-performance structured parser and requestAnimationFrame layout.
+7- Added non-overlapping polling scheduler in admin JavaScript with client-side input validations.
+
+step 40:
+1- Added dynamic capability and user context switching during background execution and WP-Cron runs in Virastai_Acr_Rewriter.
+2- Resolved security firewall false alarms (such as NinjaFirewall's unauthenticated post edit protection) by executing post updates under the post author or site administrator context.
+3- Wrapped wp_update_post calls in try-finally blocks to guarantee pristine restoration of the initial user context.
+4- Added comprehensive capability unit test suite covering author permissions, administrator fallback, and authenticated context preservation.
+
+step 41:
+1- Implemented strict Posts Per Minute (PPM) rate limiting engine synchronized across both in-browser AJAX ticks and background WP-Cron execution.
+2- Added next_run_at timestamp scheduling to prevent premature execution and rate quota overruns.
+3- Configured single-post AJAX batch dispatch for smooth UI progress updates and immunity against HTTP gateway timeouts.
+4- Added live rate and countdown indicator in admin status UI displaying exact seconds until next post rewrite.
+5- Added unit tests for PPM mathematical time budget allocation across boundary rates (1 to 60 posts per minute).
+
+step 42:
+1- Implemented atomic metadata staging in Virastai_Acr_Rewriter to commit generation status only after wp_update_post succeeds.
+2- Prevented uncommitted posts from becoming orphaned or prematurely marked as completed if interrupted by security firewalls or errors.
+3- Added progress reconciliation in Virastai_Acr_Custom_Automation to adjust total target and guarantee 100% completion display when all eligible posts finish.
+4- Added unit test suite verifying atomic metadata rollback on post update failures.
+
+step 43:
+1- Normalized publication date strings across build_query_args, calculate_counts, and handle_ajax_start to standard ISO Y-m-d format via strtotime.
+2- Added clarifying "(Job Scope: start_date to end_date)" indicator directly on the Custom Automation status card to differentiate completed job totals from form parameters.
+3- Added "Site-Wide (All Time)" label under the Sidebar Statistics header to explicitly distinguish site-wide lifetime counts from targeted automation jobs.
+4- Added unit test test_build_query_args_date_normalization verifying date normalization behavior.

@@ -165,7 +165,8 @@ class Virastai_Acr_Admin_Sidebar {
 		?>
 		<div class="virastai-acr-sidebar">
 			<div class="virastai-acr-container virastai-acr-card-sidebar">
-				<h2><?php esc_html_e( 'Statistics', 'virastai-auto-content-rewrite-with-ai' ); ?></h2>
+				<h2 style="margin-bottom: 2px;"><?php esc_html_e( 'Statistics', 'virastai-auto-content-rewrite-with-ai' ); ?></h2>
+				<p class="description" style="margin-top: 0; margin-bottom: 12px; font-size: 11px; color: #6b7280;"><?php esc_html_e( 'Site-Wide (All Time)', 'virastai-auto-content-rewrite-with-ai' ); ?></p>
 				<div class="virastai-acr-stat-row">
 					<span class="stat-label"><?php esc_html_e( 'Selected Types:', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
 					<span class="stat-value"><?php echo esc_html( implode( ', ', $selected_post_types ) ); ?></span>

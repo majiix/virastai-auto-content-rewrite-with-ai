@@ -70,7 +70,8 @@ class Virastai_Acr_Logger {
 	 */
 	public static function log( $type, $message ) {
 		$logging_enabled = get_option( 'virastai_acr_enable_logging', 0 );
-		if ( ! $logging_enabled ) {
+		// Errors and warnings are always recorded to prevent silent failures.
+		if ( ! $logging_enabled && ! in_array( $type, array( 'error', 'warning' ), true ) ) {
 			return;
 		}
 

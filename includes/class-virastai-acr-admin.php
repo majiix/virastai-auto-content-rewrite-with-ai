@@ -12,9 +12,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Virastai_Acr_Admin {
 
 	/**
-	 * Constructor.
+	 * Custom Automation instance.
+	 *
+	 * @var Virastai_Acr_Custom_Automation|null
 	 */
-	public function __construct() {
+	private $custom_automation;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param Virastai_Acr_Custom_Automation|null $custom_automation Custom automation instance.
+	 */
+	public function __construct( $custom_automation = null ) {
+		$this->custom_automation = $custom_automation;
+
 		add_action( 'admin_menu', array( $this, 'virastai_acr_add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'virastai_acr_register_settings' ) );
 		add_action( 'admin_init', array( $this, 'virastai_acr_handle_reset_actions' ) );
@@ -888,7 +899,8 @@ class Virastai_Acr_Admin {
 		$body          = wp_remote_retrieve_body( $response );
 
 		if ( class_exists( 'Virastai_Acr_Logger' ) ) {
-			Virastai_Acr_Logger::log( 'api_response', "Response code: $response_code\nBody: " . $body );
+			$logged_body = strlen( $body ) > 1000 ? substr( $body, 0, 1000 ) . '... [body truncated, total ' . round( strlen( $body ) / 1024 ) . ' KB]' : $body;
+			Virastai_Acr_Logger::log( 'api_response', "Response code: $response_code\nBody: " . $logged_body );
 		}
 
 		if ( 200 !== $response_code ) {
@@ -987,6 +999,7 @@ class Virastai_Acr_Admin {
 							<h2 class="nav-tab-wrapper virastai-acr-tabs-nav">
 								<a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php esc_html_e( 'General', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+								<a href="#tab-custom-automation" class="nav-tab" data-tab="custom-automation"><?php esc_html_e( 'Custom Automation', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-content" class="nav-tab" data-tab="content"><?php esc_html_e( 'Content Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-title" class="nav-tab" data-tab="title"><?php esc_html_e( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-logs" class="nav-tab" data-tab="logs"><?php esc_html_e( 'System Logs', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
@@ -1011,6 +1024,14 @@ class Virastai_Acr_Admin {
 										</button>
 									</div>
 								</div>
+							</div>
+
+							<div id="tab-custom-automation" class="virastai-acr-tab-content">
+								<?php
+								if ( $this->custom_automation ) {
+									$this->custom_automation->render_tab();
+								}
+								?>
 							</div>
 
 							<div id="tab-content" class="virastai-acr-tab-content">

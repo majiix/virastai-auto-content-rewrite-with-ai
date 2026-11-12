@@ -3,7 +3,7 @@ Contributors: micromax2
 Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.1
-Stable tag: 1.5.3
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,12 @@ If your server times out during long-running generations, you can increase the P
 3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
+
+= 1.6.0 =
+* Added new Custom Automation tab with date range filtering.
+* Implemented interactive lifecycle controls: Start, Pause, and Stop.
+* Added animated real-time progress bar with live AJAX status polling and active item details.
+* Added transient locking and background WP-Cron batch processing for custom automation jobs.
 
 = 1.5.3 =
 * Verified compatibility with WordPress 7.1.0.
