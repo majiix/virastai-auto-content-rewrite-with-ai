@@ -33,6 +33,7 @@ class Virastai_Acr_Admin {
 
 		// AJAX Action
 		add_action( 'wp_ajax_virastai_acr_refresh_logs', array( $this, 'handle_ajax_refresh_logs' ) );
+		add_action( 'wp_ajax_virastai_acr_fetch_models', array( $this, 'handle_ajax_fetch_models' ) );
 	}
 
 	/**
@@ -60,17 +61,34 @@ class Virastai_Acr_Admin {
 			true
 		);
 
+		// Build per-provider metadata for client-side switching.
+		$provider_configs = array();
+		foreach ( Virastai_Acr_Providers::get_providers() as $slug => $cfg ) {
+			$provider_configs[ $slug ] = array(
+				'label'         => $cfg['label'],
+				'placeholder'   => $cfg['placeholder'],
+				'requiresKey'   => ! empty( $cfg['requires_key'] ),
+				'extraFields'   => isset( $cfg['extra_fields'] ) ? $cfg['extra_fields'] : array(),
+				'savedKey'      => Virastai_Acr_Providers::get_api_key( $slug ),
+				'savedModel'    => Virastai_Acr_Providers::get_model( $slug ),
+				'curatedModels' => isset( $cfg['curated_models'] ) ? $cfg['curated_models'] : array(),
+			);
+		}
+
 		// Localize script to pass translation strings to JS.
 		wp_localize_script(
 			'virastai-acr-admin-js',
 			'virastaiData',
 			array(
-				'apiKeyEmpty'                => __( 'The OpenRouter API Key is empty. The plugin will not work without it. Do you want to continue?', 'virastai-auto-content-rewrite-with-ai' ),
+				'apiKeyEmpty'                => __( 'The API Key for the selected provider is empty. The plugin will not work without it. Do you want to continue?', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmResetAll'            => __( 'This will reset ALL progress (Content & Titles). Are you sure?', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmResetTitle'          => __( 'Reset Title progress only?', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmResetContent'        => __( 'Reset Content progress only?', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmClearSandboxTitle'   => __( 'Are you sure you want to delete ALL Sandbox Titles? This action cannot be undone.', 'virastai-auto-content-rewrite-with-ai' ),
 				'confirmClearSandboxContent' => __( 'Are you sure you want to delete ALL Sandbox Content? This action cannot be undone.', 'virastai-auto-content-rewrite-with-ai' ),
+				'refreshingModels'           => __( 'Refreshing...', 'virastai-auto-content-rewrite-with-ai' ),
+				'refreshModelsLabel'         => __( 'Refresh Models', 'virastai-auto-content-rewrite-with-ai' ),
+				'providerConfigs'            => $provider_configs,
 				'ajaxUrl'                    => admin_url( 'admin-ajax.php' ),
 				'nonce'                      => wp_create_nonce( 'virastai_acr_admin_action' ),
 			)
@@ -289,6 +307,11 @@ class Virastai_Acr_Admin {
 	 */
 	public function virastai_acr_register_settings() {
 		// API & System.
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_ai_provider', 'sanitize_key' );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_provider_api_keys', array( $this, 'virastai_acr_sanitize_provider_api_keys' ) );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_provider_models', array( $this, 'virastai_acr_sanitize_provider_models' ) );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_custom_base_url', array( $this, 'virastai_acr_sanitize_custom_base_url' ) );
+		register_setting( 'virastai_acr_options_group', 'virastai_acr_cloudflare_account_id', 'sanitize_text_field' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_openrouter_api_key', 'sanitize_text_field' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_ai_model', 'sanitize_text_field' );
 		register_setting( 'virastai_acr_options_group', 'virastai_acr_enable_logging', 'absint' );
@@ -326,15 +349,59 @@ class Virastai_Acr_Admin {
 		// --- Section: API ---
 		add_settings_section( 'virastai_acr_api_section', __( 'General', 'virastai-auto-content-rewrite-with-ai' ), null, 'virastai-auto-content-rewrite-with-ai' );
 
+		$active_provider_id = Virastai_Acr_Providers::get_active_provider_id();
+		$active_provider    = Virastai_Acr_Providers::get_provider( $active_provider_id );
+
 		add_settings_field(
-			'virastai_acr_openrouter_api_key',
-			__( 'OpenRouter API Key', 'virastai-auto-content-rewrite-with-ai' ),
-			array( $this, 'virastai_acr_render_field_masked_input' ),
+			'virastai_acr_ai_provider',
+			__( 'AI Provider', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_provider_select' ),
 			'virastai-auto-content-rewrite-with-ai',
 			'virastai_acr_api_section',
 			array(
-				'label_for'   => 'virastai_acr_openrouter_api_key',
-				'placeholder' => 'sk-or-v1-...',
+				'label_for'   => 'virastai_acr_ai_provider',
+				'description' => __( 'Select the AI provider to use for content rewriting. API keys and models are saved per provider.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_provider_api_key',
+			__( 'API Key', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_provider_api_key' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_api_section',
+			array(
+				'label_for'   => 'virastai_acr_provider_api_key',
+				'placeholder' => $active_provider['placeholder'],
+				'description' => __( 'Enter the API key for the selected provider. Optional for local Ollama.', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_custom_base_url',
+			__( 'Custom / Ollama Base URL', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_custom_base_url' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_api_section',
+			array(
+				'label_for'   => 'virastai_acr_custom_base_url',
+				'class'       => 'virastai-acr-provider-field virastai-acr-provider-custom_ollama' . ( 'custom_ollama' === $active_provider_id ? '' : ' virastai-acr-hidden' ),
+				'placeholder' => 'http://localhost:11434/v1',
+				'description' => __( 'Enter an HTTPS OpenAI-compatible base URL or a local Ollama URL (e.g. http://localhost:11434/v1).', 'virastai-auto-content-rewrite-with-ai' ),
+			)
+		);
+
+		add_settings_field(
+			'virastai_acr_cloudflare_account_id',
+			__( 'Cloudflare Account ID', 'virastai-auto-content-rewrite-with-ai' ),
+			array( $this, 'virastai_acr_render_field_cloudflare_account_id' ),
+			'virastai-auto-content-rewrite-with-ai',
+			'virastai_acr_api_section',
+			array(
+				'label_for'   => 'virastai_acr_cloudflare_account_id',
+				'class'       => 'virastai-acr-provider-field virastai-acr-provider-cloudflare' . ( 'cloudflare' === $active_provider_id ? '' : ' virastai-acr-hidden' ),
+				'placeholder' => 'your-cloudflare-account-id',
+				'description' => __( 'Required for Cloudflare Workers AI endpoints.', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 
@@ -346,7 +413,7 @@ class Virastai_Acr_Admin {
 			'virastai_acr_api_section',
 			array(
 				'label_for'   => 'virastai_acr_ai_model',
-				'description' => __( 'Select a model fetched from OpenRouter. Fallbacks will show in case of network issues.', 'virastai-auto-content-rewrite-with-ai' ),
+				'description' => __( 'Choose a model from the list, refresh from the provider API, or enter a custom Model ID below.', 'virastai-auto-content-rewrite-with-ai' ),
 			)
 		);
 
@@ -800,25 +867,212 @@ class Virastai_Acr_Admin {
 	}
 
 	/**
-	 * Render model select dropdown field.
+	 * Sanitize per-provider API keys array while preserving keys for other providers.
+	 *
+	 * @param mixed $input Submitted keys array.
+	 * @return array<string, string>
+	 */
+	public function virastai_acr_sanitize_provider_api_keys( $input ) {
+		$existing = get_option( 'virastai_acr_provider_api_keys', array() );
+		if ( ! is_array( $existing ) ) {
+			$existing = array();
+		}
+
+		if ( ! is_array( $input ) ) {
+			return $existing;
+		}
+
+		$providers = Virastai_Acr_Providers::get_providers();
+		foreach ( $input as $provider_id => $key ) {
+			$slug = sanitize_key( $provider_id );
+			if ( isset( $providers[ $slug ] ) ) {
+				$existing[ $slug ] = sanitize_text_field( wp_unslash( (string) $key ) );
+			}
+		}
+
+		if ( isset( $existing['openrouter'] ) ) {
+			update_option( 'virastai_acr_openrouter_api_key', $existing['openrouter'] );
+		}
+
+		return $existing;
+	}
+
+	/**
+	 * Sanitize per-provider models array while preserving models for other providers.
+	 *
+	 * @param mixed $input Submitted models array.
+	 * @return array<string, string>
+	 */
+	public function virastai_acr_sanitize_provider_models( $input ) {
+		$existing = get_option( 'virastai_acr_provider_models', array() );
+		if ( ! is_array( $existing ) ) {
+			$existing = array();
+		}
+
+		if ( ! is_array( $input ) ) {
+			return $existing;
+		}
+
+		$providers = Virastai_Acr_Providers::get_providers();
+		foreach ( $input as $provider_id => $model_id ) {
+			$slug = sanitize_key( $provider_id );
+			if ( isset( $providers[ $slug ] ) ) {
+				$existing[ $slug ] = sanitize_text_field( wp_unslash( (string) $model_id ) );
+			}
+		}
+
+		if ( isset( $existing['openrouter'] ) && '' !== $existing['openrouter'] ) {
+			update_option( 'virastai_acr_ai_model', $existing['openrouter'] );
+		}
+
+		return $existing;
+	}
+
+	/**
+	 * Sanitize Custom / Ollama Base URL.
+	 *
+	 * @param string $input Submitted URL.
+	 * @return string
+	 */
+	public function virastai_acr_sanitize_custom_base_url( $input ) {
+		$raw       = esc_url_raw( trim( wp_unslash( (string) $input ) ) );
+		$validated = Virastai_Acr_Providers::validate_custom_base_url( $raw );
+		if ( '' !== $raw && '' === $validated ) {
+			add_settings_error(
+				'virastai_acr_custom_base_url',
+				'invalid_custom_base_url',
+				__( 'Custom Base URL must use HTTPS, or HTTP only for localhost / 127.0.0.1 Ollama.', 'virastai-auto-content-rewrite-with-ai' )
+			);
+		}
+		return $validated;
+	}
+
+	/**
+	 * Handle AJAX request to fetch/refresh models for a provider.
+	 */
+	public function handle_ajax_fetch_models() {
+		check_ajax_referer( 'virastai_acr_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'virastai-auto-content-rewrite-with-ai' ) );
+		}
+
+		$provider_id = isset( $_POST['provider'] ) ? sanitize_key( wp_unslash( $_POST['provider'] ) ) : Virastai_Acr_Providers::get_active_provider_id();
+		$models      = Virastai_Acr_Providers::fetch_models( $provider_id, true );
+
+		wp_send_json_success(
+			array(
+				'provider' => $provider_id,
+				'models'   => $models,
+			)
+		);
+	}
+
+	/**
+	 * Render AI Provider dropdown field.
+	 */
+	public function virastai_acr_render_field_provider_select( $args ) {
+		$active_id = Virastai_Acr_Providers::get_active_provider_id();
+		$providers = Virastai_Acr_Providers::get_providers();
+		$desc      = isset( $args['description'] ) ? $args['description'] : '';
+		?>
+		<div class="virastai-acr-select-wrapper">
+			<select name="virastai_acr_ai_provider" id="virastai_acr_ai_provider" class="virastai-acr-select">
+				<?php foreach ( $providers as $slug => $cfg ) : ?>
+					<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $active_id, $slug ); ?>>
+						<?php echo esc_html( $cfg['label'] ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<?php if ( $desc ) : ?>
+			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Render masked API Key input bound to the active provider.
+	 */
+	public function virastai_acr_render_field_provider_api_key( $args ) {
+		$active_id   = Virastai_Acr_Providers::get_active_provider_id();
+		$api_key     = Virastai_Acr_Providers::get_api_key( $active_id );
+		$desc        = isset( $args['description'] ) ? $args['description'] : '';
+		$placeholder = isset( $args['placeholder'] ) ? $args['placeholder'] : '';
+		?>
+		<div class="virastai-acr-masked-input-wrapper">
+			<input type="password" id="virastai_acr_provider_api_key" name="virastai_acr_provider_api_keys[<?php echo esc_attr( $active_id ); ?>]" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text virastai-acr-input" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="off">
+			<button type="button" class="button virastai-acr-toggle-visibility-btn" title="<?php esc_attr_e( 'Toggle Visibility', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+				<span class="dashicons dashicons-visibility"></span>
+			</button>
+		</div>
+		<?php if ( $desc ) : ?>
+			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Render Custom / Ollama Base URL input field.
+	 */
+	public function virastai_acr_render_field_custom_base_url( $args ) {
+		$value       = get_option( 'virastai_acr_custom_base_url', '' );
+		$desc        = isset( $args['description'] ) ? $args['description'] : '';
+		$placeholder = isset( $args['placeholder'] ) ? $args['placeholder'] : '';
+		?>
+		<input type="url" id="virastai_acr_custom_base_url" name="virastai_acr_custom_base_url" value="<?php echo esc_attr( $value ); ?>" class="regular-text virastai-acr-input" placeholder="<?php echo esc_attr( $placeholder ); ?>">
+		<?php if ( $desc ) : ?>
+			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Render Cloudflare Account ID input field.
+	 */
+	public function virastai_acr_render_field_cloudflare_account_id( $args ) {
+		$value       = get_option( 'virastai_acr_cloudflare_account_id', '' );
+		$desc        = isset( $args['description'] ) ? $args['description'] : '';
+		$placeholder = isset( $args['placeholder'] ) ? $args['placeholder'] : '';
+		?>
+		<input type="text" id="virastai_acr_cloudflare_account_id" name="virastai_acr_cloudflare_account_id" value="<?php echo esc_attr( $value ); ?>" class="regular-text virastai-acr-input" placeholder="<?php echo esc_attr( $placeholder ); ?>">
+		<?php if ( $desc ) : ?>
+			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Render model select dropdown + refresh button + custom Model ID override.
 	 */
 	public function virastai_acr_render_field_model_select( $args ) {
-		$option = get_option( $args['label_for'], 'google/gemini-2.0-flash-lite-preview-02-05:free' );
-		$models = $this->virastai_acr_get_openrouter_models();
-		$desc   = isset( $args['description'] ) ? $args['description'] : '';
+		$active_id = Virastai_Acr_Providers::get_active_provider_id();
+		$option    = Virastai_Acr_Providers::get_model( $active_id );
+		$models    = Virastai_Acr_Providers::fetch_models( $active_id );
+		$desc      = isset( $args['description'] ) ? $args['description'] : '';
 
 		if ( ! array_key_exists( $option, $models ) && ! empty( $option ) ) {
 			$models[ $option ] = $option;
 		}
 		?>
-		<div class="virastai-acr-select-wrapper">
-			<select name="<?php echo esc_attr( $args['label_for'] ); ?>" id="<?php echo esc_attr( $args['label_for'] ); ?>" class="virastai-acr-select">
-				<?php foreach ( $models as $val => $label ) : ?>
-					<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $option, $val ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
+		<div class="virastai-acr-model-hybrid-wrapper">
+			<div class="virastai-acr-model-select-row">
+				<div class="virastai-acr-select-wrapper">
+					<select id="virastai_acr_ai_model_select" class="virastai-acr-select">
+						<?php foreach ( $models as $val => $label ) : ?>
+							<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $option, $val ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<button type="button" id="virastai-acr-refresh-models-btn" class="button virastai-acr-refresh-models-btn">
+					<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Refresh Models', 'virastai-auto-content-rewrite-with-ai' ); ?>
+				</button>
+			</div>
+			<div class="virastai-acr-model-custom-row">
+				<input type="text" id="virastai_acr_ai_model" name="virastai_acr_provider_models[<?php echo esc_attr( $active_id ); ?>]" value="<?php echo esc_attr( $option ); ?>" class="regular-text virastai-acr-input" placeholder="<?php esc_attr_e( 'Model ID (e.g. gpt-4o-mini, llama3.2)', 'virastai-auto-content-rewrite-with-ai' ); ?>">
+			</div>
 		</div>
 		<?php if ( $desc ) : ?>
 			<p class="description"><?php echo wp_kses_post( $desc ); ?></p>

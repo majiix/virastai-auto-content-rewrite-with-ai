@@ -1,16 +1,17 @@
 # Project Overview: Virastai Auto Content Rewrite With AI
 
 ## Overview
-Virastai Auto Content Rewrite With AI (v1.6.0) is an enterprise-grade WordPress plugin designed to automatically rewrite, translate, and optimize posts, pages, and custom post types using Large Language Models via the OpenRouter API.
+Virastai Auto Content Rewrite With AI (v1.7.0) is an enterprise-grade WordPress plugin designed to automatically rewrite, translate, and optimize posts, pages, and custom post types using Large Language Models across 26 supported AI providers (including OpenRouter, OpenAI Direct, Google Gemini Direct, Cohere, Groq, Cloudflare Workers AI, and Custom OpenAI-Compatible / Self-Hosted Ollama).
 
 ## Tech Stack & Architecture
 - **Language**: PHP 8.0+
 - **Platform**: WordPress 6.0+
 - **Frontend**: Vanilla JavaScript (ES6+), jQuery, CSS3
-- **External APIs**: OpenRouter API (`https://openrouter.ai/api/v1/chat/completions`)
+- **External APIs**: 26 configurable AI provider endpoints via `Virastai_Acr_Providers` (OpenAI-compatible `chat/completions`, Google Gemini `generateContent`, Cohere v2 `chat`, Cloudflare Workers AI)
 - **Background Execution**: WordPress Cron (`wp_schedule_single_event`, `wp_schedule_event`), AJAX polling
 - **Architecture**: Modular object-oriented PHP architecture:
   - `virastai-auto-content-rewrite-with-ai.php`: Plugin bootstrap, lifecycle hooks, component instantiation.
+  - `includes/class-virastai-acr-providers.php`: Multi-provider registry, credential/model resolution, model discovery, and protocol request/response adapters.
   - `includes/class-virastai-acr-rewriter.php`: LLM API communication and rewriting engine.
   - `includes/class-virastai-acr-admin.php`: Settings page, tab rendering, admin assets, logs viewer.
   - `includes/class-virastai-acr-custom-automation.php`: Date-range automated rewrite runner, cron scheduler, AJAX lifecycle handlers.
@@ -20,8 +21,9 @@ Virastai Auto Content Rewrite With AI (v1.6.0) is an enterprise-grade WordPress 
 
 ## Current Features
 1. **General Settings**:
-   - OpenRouter API key management with masked input and visibility toggling.
-   - Dynamic model fetching from OpenRouter with offline fallbacks.
+   - Multi-provider AI selector supporting 26 providers with per-provider API key and Model ID persistence (plus backward-compatible OpenRouter fallback).
+   - Hybrid Model ID selector: dynamic `/models` fetching with curated defaults and custom Model ID text input override.
+   - Conditional provider fields for Cloudflare Account ID and Custom/Ollama Base URL (HTTPS or localhost Ollama with optional API key).
 2. **Standard Automation**:
    - Background WP-Cron scheduler running at configurable intervals (1m, 5m, 15m, 30m, hourly, daily).
    - Post type and post status filtering.
@@ -53,6 +55,7 @@ Virastai Auto Content Rewrite With AI (v1.6.0) is an enterprise-grade WordPress 
 ## Verification Commands
 Run unit tests from the plugin root directory:
 ```bash
+php tests/test-providers.php
 php tests/test-custom-automation.php
 php tests/test-rewriter-force.php
 php tests/test-rewriter-capability.php

@@ -3,7 +3,7 @@ Contributors: micromax2
 Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.1
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,7 +11,7 @@ Automatically rewrite, translate, and optimize WordPress posts, pages, and post 
 
 == Description ==
 
-Virastai Auto Content Rewrite With AI is a powerful automation tool designed to refresh your WordPress site's content using state-of-the-art Large Language Models. By connecting to the OpenRouter API, this plugin allows you to leverage models to bulk-rewrite titles and body content for your WooCommerce products, blog posts, or pages.
+Virastai Auto Content Rewrite With AI is a powerful automation tool designed to refresh your WordPress site's content using state-of-the-art Large Language Models. Connect to any of 26 supported AI providers (including OpenRouter, OpenAI Direct, Google Gemini Direct, Groq, Cohere, Mistral AI, xAI, Cloudflare Workers AI, Iranian AI gateways, or a custom OpenAI-compatible / self-hosted Ollama endpoint) to bulk-rewrite titles, body content, and excerpts for your WooCommerce products, blog posts, or pages.
 
 Everything runs silently in the background using WordPress Cron, ensuring your server is never overloaded, with an option to trigger rewrites manually.
 
@@ -28,12 +28,36 @@ Key Features:
 
 == External Services ==
 
-This plugin relies on a connection to a third-party service, OpenRouter.ai, to function.
+This plugin connects to the third-party AI provider you select in the plugin settings to process and rewrite your post content (Title, Body text, and Excerpt). Requests are sent only to the provider you configure.
 
-- **Service Name**: OpenRouter
-- **Service Usage**: When the rewriting process runs, the plugin sends your post content (Title and Body text) to the OpenRouter API. The API processes this data using the selected model and returns rewritten text, which is then saved back to your website.
-- **Data Handling**: Your content is transmitted securely via HTTPS.
-- **Terms of Service**: By using this plugin, you agree to the OpenRouter Terms of Service: https://openrouter.ai/terms
+Supported providers:
+
+- **OpenRouter** (https://openrouter.ai) - Terms: https://openrouter.ai/terms, Privacy: https://openrouter.ai/privacy
+- **OpenAI Direct** (https://api.openai.com) - Terms: https://openai.com/policies/terms-of-use, Privacy: https://openai.com/policies/privacy-policy
+- **Google Gemini Direct** (https://generativelanguage.googleapis.com) - Terms: https://ai.google.dev/terms, Privacy: https://policies.google.com/privacy
+- **Jina AI** (https://api.jina.ai) - Website: https://jina.ai/
+- **Voyage AI** (https://api.voyageai.com) - Website: https://www.voyageai.com/
+- **Cohere** (https://api.cohere.com) - Terms: https://cohere.com/terms-of-use, Privacy: https://cohere.com/privacy
+- **Groq** (https://api.groq.com) - Terms: https://groq.com/terms-of-use/, Privacy: https://groq.com/privacy-policy/
+- **AvalAI** (https://api.avalai.ir) - Website: https://avalai.ir/
+- **GapGPT** (https://api.gapgpt.app) - Website: https://gapgpt.app/
+- **NVIDIA NIM** (https://integrate.api.nvidia.com) - Website: https://build.nvidia.com/
+- **Mistral AI** (https://api.mistral.ai) - Terms: https://mistral.ai/terms/
+- **Together AI** (https://api.together.xyz) - Website: https://www.together.ai/
+- **Fireworks AI** (https://api.fireworks.ai) - Website: https://fireworks.ai/
+- **TwelveLabs** (https://api.twelvelabs.io) - Website: https://www.twelvelabs.io/
+- **xAI (Grok)** (https://api.x.ai) - Website: https://x.ai/
+- **Alibaba Cloud Model Studio (Qwen DashScope)** (https://dashscope-intl.aliyuncs.com) - Website: https://www.alibabacloud.com/
+- **Cloudflare Workers AI** (https://api.cloudflare.com) - Website: https://www.cloudflare.com/
+- **ArvanCloud AI** (https://api.arvancloudai.ir) - Website: https://www.arvancloud.ir/
+- **MetisAI** (https://api.metisai.ir) - Website: https://metisai.ir/
+- **Liara AI** (https://ai.liara.ir) - Website: https://liara.ir/
+- **HeroAI** (https://api.heroai.ir) - Website: https://heroai.ir/
+- **TalkBot** (https://api.talkbot.ir) - Website: https://talkbot.ir/
+- **CupAI** (https://api.cupai.ir) - Website: https://cupai.ir/
+- **Hooshang** (https://hushang.cloud) - Website: https://hushang.cloud/
+- **Hormouz** (https://api.hormouz.net) - Website: https://api.hormouz.net/
+- **Custom OpenAI-Compatible Endpoint / Self-Hosted Ollama** - Sends requests only to the HTTPS (or localhost Ollama) Base URL you explicitly configure.
 
 == Getting Started ==
 
@@ -94,6 +118,12 @@ If your server times out during long-running generations, you can increase the P
 3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
+
+= 1.7.0 =
+* Added multi-provider AI support for 26 providers (OpenRouter, OpenAI Direct, Google Gemini Direct, Cohere, Groq, Mistral AI, xAI, NVIDIA NIM, Together AI, Fireworks AI, Alibaba Cloud Model Studio, Cloudflare Workers AI, Jina AI, Voyage AI, TwelveLabs, AvalAI, GapGPT, ArvanCloud AI, MetisAI, Liara AI, HeroAI, TalkBot, CupAI, Hooshang, Hormouz, and Custom OpenAI-Compatible / Self-Hosted Ollama).
+* Added per-provider API key and Model ID persistence with backward-compatible OpenRouter fallback.
+* Added hybrid Model ID selector with dynamic /models refresh, curated defaults, and custom Model ID input override.
+* Added conditional provider fields for Custom/Ollama Base URL and Cloudflare Account ID, plus log header credential redaction.
 
 = 1.6.0 =
 * Added new Custom Automation tab with date range filtering.

@@ -22,6 +22,11 @@ if ( ! $virastai_acr_delete_data ) {
 
 // 2. Delete Plugin Options.
 $virastai_options_to_delete = array(
+	'virastai_acr_ai_provider',
+	'virastai_acr_provider_api_keys',
+	'virastai_acr_provider_models',
+	'virastai_acr_custom_base_url',
+	'virastai_acr_cloudflare_account_id',
 	'virastai_acr_openrouter_api_key',
 	'virastai_acr_ai_model',
 	'virastai_acr_enable_logging',
@@ -62,8 +67,14 @@ delete_metadata( 'post', 0, '_virastai_acr_sandbox_content', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_sandbox_excerpt', '', true );
 delete_metadata( 'post', 0, '_virastai_acr_retry_count', '', true );
 
-// 4. Delete Model Cache Transient.
+// 4. Delete Model Cache Transients.
 delete_transient( 'virastai_acr_models_cache' );
+if ( file_exists( __DIR__ . '/includes/class-virastai-acr-providers.php' ) ) {
+	require_once __DIR__ . '/includes/class-virastai-acr-providers.php';
+	foreach ( array_keys( Virastai_Acr_Providers::get_providers() ) as $virastai_provider_slug ) {
+		delete_transient( 'virastai_acr_models_cache_' . sanitize_key( $virastai_provider_slug ) );
+	}
+}
 
 // 5. Drop Database Table.
 global $wpdb;

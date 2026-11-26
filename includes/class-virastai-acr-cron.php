@@ -110,8 +110,11 @@ class Virastai_Acr_Cron {
 			return;
 		}
 
-		$api_key = get_option( 'virastai_acr_openrouter_api_key', '' );
-		if ( empty( trim( $api_key ) ) ) {
+		if ( ! class_exists( 'Virastai_Acr_Providers' ) ) {
+			require_once __DIR__ . '/class-virastai-acr-providers.php';
+		}
+
+		if ( ! Virastai_Acr_Providers::is_configured() ) {
 			return;
 		}
 

@@ -440,59 +440,44 @@ class Virastai_Acr_Rewriter {
 	}
 
 	/**
-	 * Private helper to call OpenRouter API.
+	 * Private helper to call configured AI Provider API.
 	 *
 	 * @param string $prompt       The prompt to send.
 	 * @param bool   $is_json_mode Whether to request a JSON response format.
 	 * @return string|false Generated text or false on failure.
 	 */
 	private function virastai_acr_call_api( $prompt, $is_json_mode = false ) {
-		$api_key = get_option( 'virastai_acr_openrouter_api_key', '' );
-		$model   = get_option( 'virastai_acr_ai_model', 'google/gemini-2.0-flash-lite-preview-02-05:free' );
+		if ( ! class_exists( 'Virastai_Acr_Providers' ) ) {
+			require_once __DIR__ . '/class-virastai-acr-providers.php';
+		}
 
-		$api_key = trim( $api_key );
+		$provider_id = Virastai_Acr_Providers::get_active_provider_id();
 
-		if ( empty( $api_key ) ) {
-			$this->log( 'API Key is missing. Please configure your OpenRouter API Key in settings.', 'error' );
+		if ( ! Virastai_Acr_Providers::is_configured( $provider_id ) ) {
+			$provider = Virastai_Acr_Providers::get_provider( $provider_id );
+			$this->log( sprintf( 'API configuration is incomplete for provider "%s". Please check your settings.', $provider['label'] ), 'error' );
 			return false;
 		}
 
-		if ( empty( self::API_ENDPOINT ) ) {
-			$this->log( 'CRITICAL: API Endpoint Constant is empty.', 'error' );
+		$request = Virastai_Acr_Providers::build_request( $provider_id, $prompt, $is_json_mode );
+		if ( is_wp_error( $request ) ) {
+			$this->log( 'API Request Build Error: ' . $request->get_error_message(), 'error' );
 			return false;
 		}
 
-		$request_body = array(
-			'model'    => $model,
-			'messages' => array(
-				array(
-					'role'    => 'user',
-					'content' => $prompt,
-				),
-			),
-		);
-
-		if ( $is_json_mode ) {
-			$request_body['response_format'] = array( 'type' => 'json_object' );
-		}
-
-		$headers = array(
-			'Content-Type'  => 'application/json',
-			'Authorization' => 'Bearer ' . $api_key,
-			'HTTP-Referer'  => get_site_url(),
-			'X-Title'       => 'Virastai Auto Content Rewrite With AI',
-		);
+		$endpoint     = $request['url'];
+		$headers      = $request['headers'];
 		$request_args = array(
 			'headers' => $headers,
-			'body'    => wp_json_encode( $request_body ),
+			'body'    => wp_json_encode( $request['body'] ),
 			'timeout' => 45,
 		);
 
 		$this->log(
 			sprintf(
 				"POST request sent to: %s\nHeaders: %s\nBody: %s",
-				self::API_ENDPOINT,
-				wp_json_encode( $headers ),
+				$endpoint,
+				wp_json_encode( Virastai_Acr_Providers::mask_headers_for_log( $headers ) ),
 				$request_args['body']
 			),
 			'api_request'
@@ -503,7 +488,7 @@ class Virastai_Acr_Rewriter {
 			@set_time_limit( 120 );
 		}
 
-		$response = wp_remote_post( self::API_ENDPOINT, $request_args );
+		$response = wp_remote_post( $endpoint, $request_args );
 
 		if ( is_wp_error( $response ) ) {
 			$this->log( 'API Error: ' . $response->get_error_message(), 'error' );
@@ -527,12 +512,12 @@ class Virastai_Acr_Rewriter {
 			return false;
 		}
 
-		$data = json_decode( $response_body, true );
-
-		if ( isset( $data['choices'][0]['message']['content'] ) ) {
-			return $data['choices'][0]['message']['content'];
+		$content = Virastai_Acr_Providers::parse_response( $provider_id, $response_body );
+		if ( false !== $content ) {
+			return $content;
 		}
 
+		$data         = json_decode( $response_body, true );
 		$error_detail = 'No content found in API response.';
 		if ( isset( $data['error']['message'] ) ) {
 			$error_detail = 'Provider error: ' . $data['error']['message'];

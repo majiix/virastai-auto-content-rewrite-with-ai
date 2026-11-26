@@ -199,6 +199,31 @@
 }
 
 /* Model Select Dropdown field */
+.virastai-acr-hidden {
+    display: none !important;
+}
+
+.virastai-acr-model-hybrid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 520px;
+}
+
+.virastai-acr-model-select-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.virastai-acr-refresh-models-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+}
+
 .virastai-acr-select-wrapper {
     position: relative;
     display: inline-block;

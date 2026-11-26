@@ -85,18 +85,100 @@ jQuery(document).ready(function ($) {
         }
     });
 
+    // --- Multi-Provider Settings & Model Hybrid Selector ---
+    const providerSelect = $('#virastai_acr_ai_provider');
+    const apiKeyField = $('#virastai_acr_provider_api_key');
+    const modelSelect = $('#virastai_acr_ai_model_select');
+    const modelCustomInput = $('#virastai_acr_ai_model');
+    const refreshModelsBtn = $('#virastai-acr-refresh-models-btn');
+    const customBaseUrlInput = $('#virastai_acr_custom_base_url');
+    const providerConfigs = (typeof virastaiData !== 'undefined' && virastaiData.providerConfigs) ? virastaiData.providerConfigs : {};
+
+    function populateModelDropdown(modelsMap, selectedModel) {
+        if (!modelSelect.length) return;
+        modelSelect.empty();
+        const entries = Object.entries(modelsMap || {});
+        let foundSelected = false;
+        entries.forEach(function ([val, label]) {
+            const opt = $('<option></option>').val(val).text(label);
+            if (val === selectedModel) {
+                opt.prop('selected', true);
+                foundSelected = true;
+            }
+            modelSelect.append(opt);
+        });
+        if (selectedModel && !foundSelected) {
+            modelSelect.append($('<option></option>').val(selectedModel).text(selectedModel).prop('selected', true));
+        }
+    }
+
+    function toggleProviderConditionalFields(providerId) {
+        $('.virastai-acr-provider-field').addClass('virastai-acr-hidden');
+        $('.virastai-acr-provider-' + providerId).removeClass('virastai-acr-hidden');
+    }
+
+    if (providerSelect.length) {
+        providerSelect.on('change', function () {
+            const slug = $(this).val();
+            const cfg = providerConfigs[slug] || {};
+
+            // Update input names so per-provider arrays save under the active slug.
+            apiKeyField.attr('name', 'virastai_acr_provider_api_keys[' + slug + ']');
+            apiKeyField.attr('placeholder', cfg.placeholder || '');
+            apiKeyField.val(cfg.savedKey || '');
+
+            modelCustomInput.attr('name', 'virastai_acr_provider_models[' + slug + ']');
+            const nextModel = cfg.savedModel || '';
+            modelCustomInput.val(nextModel);
+
+            populateModelDropdown(cfg.curatedModels || {}, nextModel);
+            toggleProviderConditionalFields(slug);
+        });
+    }
+
+    if (modelSelect.length && modelCustomInput.length) {
+        modelSelect.on('change', function () {
+            modelCustomInput.val($(this).val());
+        });
+    }
+
+    if (refreshModelsBtn.length && providerSelect.length) {
+        refreshModelsBtn.on('click', function () {
+            const slug = providerSelect.val();
+            const originalHtml = refreshModelsBtn.html();
+            const loadingText = (typeof virastaiData !== 'undefined' && virastaiData.refreshingModels) ? virastaiData.refreshingModels : 'Refreshing...';
+
+            refreshModelsBtn.prop('disabled', true).text(loadingText);
+
+            $.post(virastaiData.ajaxUrl, {
+                action: 'virastai_acr_fetch_models',
+                nonce: virastaiData.nonce,
+                provider: slug
+            })
+            .done(function (res) {
+                if (res && res.success && res.data && res.data.models) {
+                    populateModelDropdown(res.data.models, modelCustomInput.val());
+                }
+            })
+            .always(function () {
+                refreshModelsBtn.prop('disabled', false).html(originalHtml);
+            });
+        });
+    }
+
     // --- Form Validation ---
     const settingsForm = $('#virastai-acr-settings-form');
-    const apiKeyField = $('#virastai_acr_openrouter_api_key');
 
     settingsForm.on('submit', function (e) {
         let hasError = false;
+        const activeProvider = providerSelect.length ? providerSelect.val() : 'openrouter';
+        const isLocalOllama = activeProvider === 'custom_ollama' && customBaseUrlInput.length && /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(customBaseUrlInput.val().trim());
 
         const confirmMsg = ( typeof virastaiData !== 'undefined' && virastaiData.apiKeyEmpty )
             ? virastaiData.apiKeyEmpty
-            : 'The OpenRouter API Key is empty. The plugin will not work without it. Do you want to continue?';
+            : 'The API Key for the selected provider is empty. The plugin will not work without it. Do you want to continue?';
 
-        if (apiKeyField.length && apiKeyField.val().trim() === '') {
+        if (!isLocalOllama && apiKeyField.length && apiKeyField.val().trim() === '') {
             if (!confirm(confirmMsg)) {
                 apiKeyField.focus();
                 hasError = true;
