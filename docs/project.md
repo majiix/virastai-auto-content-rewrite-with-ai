@@ -1,7 +1,7 @@
 # Project Overview: Virastai Auto Content Rewrite With AI
 
 ## Overview
-Virastai Auto Content Rewrite With AI (v1.7.0) is an enterprise-grade WordPress plugin designed to automatically rewrite, translate, and optimize posts, pages, and custom post types using Large Language Models across 26 supported AI providers (including OpenRouter, OpenAI Direct, Google Gemini Direct, Cohere, Groq, Cloudflare Workers AI, and Custom OpenAI-Compatible / Self-Hosted Ollama).
+Virastai Auto Content Rewrite With AI (v1.7.1) is an enterprise-grade WordPress plugin designed to automatically rewrite, translate, and optimize posts, pages, and custom post types using Large Language Models across 26 supported AI providers (including OpenRouter, OpenAI Direct, Google Gemini Direct, Cohere, Groq, Cloudflare Workers AI, and Custom OpenAI-Compatible / Self-Hosted Ollama).
 
 ## Tech Stack & Architecture
 - **Language**: PHP 8.0+
@@ -44,7 +44,6 @@ Virastai Auto Content Rewrite With AI (v1.7.0) is an enterprise-grade WordPress 
 Run unit tests from the plugin root directory:
 ```bash
 php tests/test-providers.php
-php tests/test-mutual-deactivation.php
 php tests/test-rewriter-force.php
 php tests/test-rewriter-capability.php
 php tests/test-rewriter-atomic-meta.php

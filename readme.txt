@@ -3,7 +3,7 @@ Contributors: micromax2
 Tags: content rewriter, woocommerce, seo, automation, blogger
 Requires at least: 5.8
 Tested up to: 7.1
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,10 @@ If your server times out during long-running generations, you can increase the P
 3. Check with your hosting provider to ensure they do not enforce a hard limit on request times.
 
 == Changelog ==
+
+= 1.7.1 =
+* Removed Custom Automation Engine from the Free edition.
+* Added defensive function_exists guards for safer plugin activation.
 
 = 1.7.0 =
 * Added multi-provider AI support for 26 providers (OpenRouter, OpenAI Direct, Google Gemini Direct, Cohere, Groq, Mistral AI, xAI, NVIDIA NIM, Together AI, Fireworks AI, Alibaba Cloud Model Studio, Cloudflare Workers AI, Jina AI, Voyage AI, TwelveLabs, AvalAI, GapGPT, ArvanCloud AI, MetisAI, Liara AI, HeroAI, TalkBot, CupAI, Hooshang, Hormouz, and Custom OpenAI-Compatible / Self-Hosted Ollama).
