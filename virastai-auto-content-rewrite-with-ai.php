@@ -16,6 +16,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! function_exists( 'virastai_acr_free_activate' ) ) {
+	/**
+	 * Deactivate Pro edition if active and initialize logger table on Free activation.
+	 */
+	function virastai_acr_free_activate() {
+		if ( ! function_exists( 'deactivate_plugins' ) && defined( 'ABSPATH' ) && file_exists( ABSPATH . 'wp-admin/includes/plugin.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( function_exists( 'deactivate_plugins' ) ) {
+			$active_plugins = (array) get_option( 'active_plugins', array() );
+			if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+				$sitewide_plugins = (array) get_site_option( 'active_sitewide_plugins', array() );
+				$active_plugins   = array_merge( $active_plugins, array_keys( $sitewide_plugins ) );
+			}
+
+			$to_deactivate = array();
+			foreach ( $active_plugins as $plugin_file ) {
+				if ( 'virastai-auto-content-rewrite-with-ai-pro.php' === basename( $plugin_file ) ) {
+					$to_deactivate[] = $plugin_file;
+				}
+			}
+
+			if ( ! empty( $to_deactivate ) ) {
+				$network_wide = function_exists( 'is_network_admin' ) && is_network_admin();
+				deactivate_plugins( $to_deactivate, false, $network_wide );
+			}
+		}
+
+		if ( ! class_exists( 'Virastai_Acr_Logger' ) ) {
+			require_once plugin_dir_path( __FILE__ ) . 'includes/class-virastai-acr-logger.php';
+		}
+		Virastai_Acr_Logger::create_table();
+	}
+}
+register_activation_hook( __FILE__, 'virastai_acr_free_activate' );
+
+// Prevent class/function redeclaration when counterpart edition is already loaded during activation.
+if ( defined( 'VIRASTAI_ACR_VERSION' ) ) {
+	return;
+}
+
 // Define Constants with 'VIRASTAI_ACR_' prefix.
 define( 'VIRASTAI_ACR_VERSION', '1.7.0' );
 define( 'VIRASTAI_ACR_PATH', plugin_dir_path( __FILE__ ) );
@@ -30,15 +72,6 @@ require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-admin-sidebar.php'
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-metabox.php';
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-cron.php';
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-custom-automation.php';
-
-/**
- * Run table creation on plugin activation.
- */
-function virastai_acr_activate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-virastai-acr-logger.php';
-	Virastai_Acr_Logger::create_table();
-}
-register_activation_hook( __FILE__, 'virastai_acr_activate' );
 
 /**
  * Initialize the plugin.

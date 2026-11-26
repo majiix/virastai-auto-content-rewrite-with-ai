@@ -56,6 +56,7 @@ Virastai Auto Content Rewrite With AI (v1.7.0) is an enterprise-grade WordPress 
 Run unit tests from the plugin root directory:
 ```bash
 php tests/test-providers.php
+php tests/test-mutual-deactivation.php
 php tests/test-custom-automation.php
 php tests/test-rewriter-force.php
 php tests/test-rewriter-capability.php
