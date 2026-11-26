@@ -221,18 +221,7 @@
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    gap: 6px;
     height: 40px;
-    line-height: 1 !important;
-}
-
-.virastai-acr-refresh-models-btn .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-    margin: 0 !important;
-    vertical-align: middle;
 }
 
 .virastai-acr-select-wrapper {
@@ -1109,215 +1098,40 @@ body.virastai-acr-modal-open {
     border-color: #dc2626 !important;
 }
 
-/* --- Custom Automation Tab Styles --- */
-.virastai-acr-ca-container {
-    max-width: 860px;
-    margin-top: 10px;
+
+/* Supported AI Providers Help Card */
+.virastai-acr-help-card-full {
+    grid-column: 1 / -1;
 }
 
-.virastai-acr-ca-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.virastai-acr-ca-status-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-}
-
-.virastai-acr-ca-status-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.virastai-acr-ca-status-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 9999px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-
-.virastai-acr-ca-status-badge.badge-idle {
-    background: #f3f4f6;
-    color: #4b5563;
-}
-
-.virastai-acr-ca-status-badge.badge-running {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.virastai-acr-ca-status-badge.badge-paused {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.virastai-acr-ca-status-badge.badge-completed {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.virastai-acr-ca-status-badge.badge-stopped {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.virastai-acr-ca-active-item {
-    font-size: 13px;
-    color: #6b7280;
-    font-weight: 500;
-    max-width: 400px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.virastai-acr-ca-percent {
-    font-size: 22px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.virastai-acr-progress-bar-track {
-    width: 100%;
-    height: 10px;
-    background: #f3f4f6;
-    border-radius: 9999px;
-    overflow: hidden;
-    margin-bottom: 18px;
-}
-
-.virastai-acr-progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%);
-    border-radius: 9999px;
-    transition: width 0.4s ease;
-}
-
-.virastai-acr-ca-metrics-grid {
+.virastai-acr-help-providers-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
 }
 
-.virastai-acr-ca-metric {
+.virastai-acr-help-provider-item {
     background: #f9fafb;
-    border: 1px solid #f3f4f6;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.virastai-acr-help-provider-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.virastai-acr-help-provider-meta {
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
-
-.virastai-acr-ca-metric .metric-label {
     font-size: 12px;
-    color: #6b7280;
-    font-weight: 500;
-}
-
-.virastai-acr-ca-metric .metric-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.virastai-acr-ca-metric .metric-value.text-success {
-    color: #10b981;
-}
-
-.virastai-acr-ca-metric .metric-value.text-danger {
-    color: #ef4444;
-}
-
-.virastai-acr-ca-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.virastai-acr-ca-form-field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
-}
-
-.virastai-acr-inline-checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #374151;
-    cursor: pointer;
-}
-
-.virastai-acr-ca-counts-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-}
-
-.virastai-acr-ca-counts-badge {
-    display: inline-flex;
-    align-items: center;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    border-radius: 9999px;
-    padding: 3px 12px;
-    font-size: 12px;
-    font-weight: 500;
     color: #4b5563;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
 }
-
-.virastai-acr-ca-counts-badge.is-loading {
-    opacity: 0.5;
-}
-
-.virastai-acr-ca-counts-text {
-    display: inline-block;
-}
-
-.virastai-acr-ca-failed-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 2px;
-}
-
-.virastai-acr-ca-retry-btn {
-    padding: 3px 8px !important;
-    font-size: 11px !important;
-    height: auto !important;
-    line-height: 1.4 !important;
-    border-radius: 6px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-
-.virastai-acr-ca-retry-btn .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    line-height: 14px;
-}
-
-
-
-
-

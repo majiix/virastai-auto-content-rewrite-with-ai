@@ -12,20 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Virastai_Acr_Admin {
 
 	/**
-	 * Custom Automation instance.
-	 *
-	 * @var Virastai_Acr_Custom_Automation|null
-	 */
-	private $custom_automation;
-
-	/**
 	 * Constructor.
-	 *
-	 * @param Virastai_Acr_Custom_Automation|null $custom_automation Custom automation instance.
 	 */
-	public function __construct( $custom_automation = null ) {
-		$this->custom_automation = $custom_automation;
-
+	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'virastai_acr_add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'virastai_acr_register_settings' ) );
 		add_action( 'admin_init', array( $this, 'virastai_acr_handle_reset_actions' ) );
@@ -1067,7 +1056,7 @@ class Virastai_Acr_Admin {
 					</select>
 				</div>
 				<button type="button" id="virastai-acr-refresh-models-btn" class="button virastai-acr-refresh-models-btn">
-					<span class="dashicons dashicons-update"></span> <?php esc_html_e( 'Refresh Models', 'virastai-auto-content-rewrite-with-ai' ); ?>
+					<?php esc_html_e( 'Refresh Models', 'virastai-auto-content-rewrite-with-ai' ); ?>
 				</button>
 			</div>
 			<div class="virastai-acr-model-custom-row">
@@ -1253,7 +1242,6 @@ class Virastai_Acr_Admin {
 							<h2 class="nav-tab-wrapper virastai-acr-tabs-nav">
 								<a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php esc_html_e( 'General', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-automation" class="nav-tab" data-tab="automation"><?php esc_html_e( 'Automation', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
-								<a href="#tab-custom-automation" class="nav-tab" data-tab="custom-automation"><?php esc_html_e( 'Custom Automation', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-content" class="nav-tab" data-tab="content"><?php esc_html_e( 'Content Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-title" class="nav-tab" data-tab="title"><?php esc_html_e( 'Title Options', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
 								<a href="#tab-logs" class="nav-tab" data-tab="logs"><?php esc_html_e( 'System Logs', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
@@ -1278,14 +1266,6 @@ class Virastai_Acr_Admin {
 										</button>
 									</div>
 								</div>
-							</div>
-
-							<div id="tab-custom-automation" class="virastai-acr-tab-content">
-								<?php
-								if ( $this->custom_automation ) {
-									$this->custom_automation->render_tab();
-								}
-								?>
 							</div>
 
 							<div id="tab-content" class="virastai-acr-tab-content">
@@ -1353,29 +1333,18 @@ class Virastai_Acr_Admin {
 										<div class="virastai-acr-help-card">
 											<div class="help-card-header">
 												<span class="dashicons dashicons-key"></span>
-												<h3><?php esc_html_e( 'API Key & Model Selection', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+												<h3><?php esc_html_e( 'AI Provider, API Key & Model Setup', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
 											</div>
 											<div class="help-card-body">
-												<p><strong><?php esc_html_e( 'Getting an API Key:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
+												<p><strong><?php esc_html_e( 'Configuring a Provider:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
 												<ol>
-													<li>
-														<?php
-														echo wp_kses_post(
-															sprintf(
-																/* translators: %s: Link to OpenRouter homepage */
-																__( 'Visit %s and sign up for an account.', 'virastai-auto-content-rewrite-with-ai' ),
-																'<a href="https://openrouter.ai/" target="_blank" rel="noopener">OpenRouter.ai</a>'
-															)
-														);
-														?>
-													</li>
-													<li><?php esc_html_e( 'Navigate to the Keys section and create a new API Key.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
-													<li><?php esc_html_e( 'Copy the generated key, paste it into the OpenRouter API Key field in the General tab, and save your settings.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Open the General tab and choose your preferred AI Provider from the dropdown (26 providers supported).', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Enter the API Key for that provider. Keys and selected models are saved independently per provider.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'For Cloudflare Workers AI, also enter your Cloudflare Account ID. For Custom/Ollama, enter an HTTPS Base URL or local Ollama URL (http://localhost:11434/v1; API key is optional for local Ollama).', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
 												</ol>
 												<p style="margin-top: 15px;"><strong><?php esc_html_e( 'Selecting a Model:', 'virastai-auto-content-rewrite-with-ai' ); ?></strong></p>
 												<ul>
-													<li><?php esc_html_e( 'After saving a valid API Key, the plugin automatically fetches and caches all available models from OpenRouter.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
-													<li><?php esc_html_e( 'Choose your preferred text generation model from the Model ID dropdown select field.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
+													<li><?php esc_html_e( 'Choose from curated or dynamically fetched models, click Refresh Models to query the provider API, or type any Model ID directly into the custom Model ID input.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
 												</ul>
 											</div>
 										</div>
@@ -1419,6 +1388,35 @@ class Virastai_Acr_Admin {
 													<li><?php esc_html_e( 'Apply Generations: Overwrite the live post with the reviewed sandbox drafts.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
 													<li><?php esc_html_e( 'Clear Generated: Clear the sandbox preview drafts and reset the progress markers.', 'virastai-auto-content-rewrite-with-ai' ); ?></li>
 												</ul>
+											</div>
+										</div>
+										<!-- Card 4: Supported AI Providers -->
+										<div class="virastai-acr-help-card virastai-acr-help-card-full">
+											<div class="help-card-header">
+												<span class="dashicons dashicons-cloud"></span>
+												<h3><?php esc_html_e( 'Supported AI Providers (26)', 'virastai-auto-content-rewrite-with-ai' ); ?></h3>
+											</div>
+											<div class="help-card-body">
+												<div class="virastai-acr-help-providers-grid">
+													<?php foreach ( Virastai_Acr_Providers::get_providers() as $slug => $cfg ) : ?>
+														<div class="virastai-acr-help-provider-item">
+															<div class="virastai-acr-help-provider-title">
+																<strong><?php echo esc_html( $cfg['label'] ); ?></strong>
+																<?php if ( ! empty( $cfg['website'] ) ) : ?>
+																	<a href="<?php echo esc_url( $cfg['website'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs / Website', 'virastai-auto-content-rewrite-with-ai' ); ?></a>
+																<?php endif; ?>
+															</div>
+															<div class="virastai-acr-help-provider-meta">
+																<span><?php esc_html_e( 'Default model:', 'virastai-auto-content-rewrite-with-ai' ); ?> <code><?php echo esc_html( $cfg['default_model'] ); ?></code></span>
+																<?php if ( 'cloudflare' === $slug ) : ?>
+																	<span><?php esc_html_e( 'Requires API Token + Cloudflare Account ID.', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
+																<?php elseif ( 'custom_ollama' === $slug ) : ?>
+																	<span><?php esc_html_e( 'Requires HTTPS Base URL or local Ollama URL (key optional locally).', 'virastai-auto-content-rewrite-with-ai' ); ?></span>
+																<?php endif; ?>
+															</div>
+														</div>
+													<?php endforeach; ?>
+												</div>
 											</div>
 										</div>
 									</div>

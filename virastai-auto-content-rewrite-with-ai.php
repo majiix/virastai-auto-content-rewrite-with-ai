@@ -71,7 +71,6 @@ require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-admin.php';
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-admin-sidebar.php';
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-metabox.php';
 require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-cron.php';
-require_once VIRASTAI_ACR_PATH . 'includes/class-virastai-acr-custom-automation.php';
 
 /**
  * Initialize the plugin.
@@ -83,12 +82,9 @@ function virastai_acr_init() {
 	// Initialize Rewriter Engine.
 	$rewriter = new Virastai_Acr_Rewriter();
 
-	// Initialize Custom Automation.
-	$custom_automation = new Virastai_Acr_Custom_Automation( $rewriter );
-
 	// Initialize Admin Settings.
 	if ( is_admin() ) {
-		new Virastai_Acr_Admin( $custom_automation );
+		new Virastai_Acr_Admin();
 		// Initialize Metabox logic (runs in admin context).
 		new Virastai_Acr_Metabox();
 	}
@@ -103,9 +99,7 @@ add_action( 'plugins_loaded', 'virastai_acr_init' );
  */
 function virastai_acr_deactivate() {
 	wp_clear_scheduled_hook( 'virastai_acr_process_content_event' );
-	wp_clear_scheduled_hook( 'virastai_acr_custom_automation_batch_event' );
 	wp_clear_scheduled_hook( 'virastai_acr_daily_cleanup_event' );
-	delete_transient( 'virastai_acr_ca_lock' );
 }
 register_deactivation_hook( __FILE__, 'virastai_acr_deactivate' );
 
